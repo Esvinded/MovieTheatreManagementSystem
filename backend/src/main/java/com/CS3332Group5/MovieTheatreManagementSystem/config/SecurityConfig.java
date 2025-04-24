@@ -22,6 +22,8 @@ public class SecurityConfig {
                 // Allow public access to customer and staff authentication endpoints
                 .requestMatchers("/api/auth/customer/register", "/api/auth/customer/login").permitAll()
                 .requestMatchers("/api/auth/staff/register", "/api/auth/staff/login").permitAll()
+                // Allow access to customer and staff pages
+                .requestMatchers("/customer", "/staff", "/css/**", "/js/**").permitAll()
                 // Secure all other endpoints
                 .anyRequest().authenticated()
             )
