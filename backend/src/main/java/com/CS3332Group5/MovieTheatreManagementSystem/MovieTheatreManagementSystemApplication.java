@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class MovieTheatreManagementSystemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MovieTheatreManagementSystemApplication.class, args);
+	    SpringApplication.run(MovieTheatreManagementSystemApplication.class, args);
 	}
 
 }
