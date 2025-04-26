@@ -20,18 +20,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Disable CSRF protection for APIs
             .authorizeHttpRequests(auth -> auth
+                // Allow authenticated users to change their password and logout
+                .requestMatchers("/api/auth/change-password", "/api/auth/logout").authenticated()
                 // Allow public access to customer and staff authentication endpoints
                 .requestMatchers(
-                    "/api/auth/customer/register",
-                    "/api/auth/customer/login",
-                    "/api/auth/staff/register",
-                    "/api/auth/staff/login",
-                    "/api/auth/logout"
+                    "/api/auth/**"
                 ).permitAll()
                 // Allow public access to common pages and static resources
                 .requestMatchers("/customer", "/staff", "/css/**", "/js/**").permitAll()
-                // Allow authenticated users to change their password
-                .requestMatchers("/api/auth/change-password").authenticated()
                 // Secure all other endpoints
                 .anyRequest().authenticated()
             )

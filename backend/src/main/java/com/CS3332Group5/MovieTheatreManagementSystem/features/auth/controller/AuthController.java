@@ -2,6 +2,7 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.auth.controller;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.dto.ChangePasswordRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.dto.LoginRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.dto.ForgotPasswordRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Customer;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Staff;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.service.UserService;
@@ -9,22 +10,24 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.Cu
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.StaffRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 
 
 @RestController
@@ -77,9 +80,11 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
 
-            // Authenticate with Spring Security
+            // Assign ROLE_CUSTOMER
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                customer.getUsername(), null, new ArrayList<>()
+                customer.getUsername(), null, authorities
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
@@ -90,6 +95,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
+
 
     // Staff Registration
     @PostMapping("/staff/register")
@@ -125,9 +131,11 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
 
-            // Authenticate with Spring Security
+            // Assign ROLE_STAFF
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_STAFF"));
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                staff.getUsername(), null, new ArrayList<>()
+                staff.getUsername(), null, authorities
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
@@ -138,33 +146,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
-
-    // Unified Login for both Customer and Staff
-    // @PostMapping("/login")
-    // public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
-    //     // Validate login fields
-    //     Map<String, String> errors = validateLoginRequest(loginRequest);
-    //     if (!errors.isEmpty()) {
-    //         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    //     }
-
-    //     try {
-    //         String loginMessage = userService.login(loginRequest);
-
-    //         // After successful login, manually set Authentication (for session-based login)
-    //         Authentication authentication = new UsernamePasswordAuthenticationToken(
-    //             loginRequest.getUsername(), null, new ArrayList<>()
-    //         );
-    //         SecurityContextHolder.getContext().setAuthentication(authentication);
-    //         request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-    //         return ResponseEntity.ok(loginMessage);
-    //     } catch (IllegalArgumentException e) {
-    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
-    //     }
-    // }
 
     // Change Password
     @PostMapping("/change-password")
@@ -226,13 +207,25 @@ public class AuthController {
         return email.matches(emailRegex);
     }
 
-        @PostMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false); // get current session, don't create new
         if (session != null) {
             session.invalidate(); // destroy the session
         }
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            userService.forgotPasswordAndSendEmail(request.getEmail());
+            return ResponseEntity.ok("Temporary password sent to your email.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
     }
 
 }
