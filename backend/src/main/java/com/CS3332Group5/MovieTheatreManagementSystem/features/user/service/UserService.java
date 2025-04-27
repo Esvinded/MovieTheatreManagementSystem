@@ -12,7 +12,6 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Staff;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.StaffRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.service.EmailService;
-import java.util.Random;
 
 
 @Service
@@ -123,46 +122,6 @@ public class UserService {
         } else {
             throw new IllegalArgumentException("User not found");
         }
-    }
-
-    public void forgotPasswordAndSendEmail(String email) {
-        Optional<Customer> customerOpt = customerRepository.findByEmail(email);
-        Optional<Staff> staffOpt = staffRepository.findByEmail(email);
-    
-        if (customerOpt.isPresent()) {
-            Customer customer = customerOpt.get();
-            String tempPassword = generateTempPassword();
-            customer.setPassword(passwordEncoder.encode(tempPassword));
-            customerRepository.save(customer);
-            emailService.sendSimpleEmail(
-                email,
-                "Your Temporary Password",
-                "Your new temporary password is: " + tempPassword + "\nPlease login and change your password immediately."
-            );
-        } else if (staffOpt.isPresent()) {
-            Staff staff = staffOpt.get();
-            String tempPassword = generateTempPassword();
-            staff.setPassword(passwordEncoder.encode(tempPassword));
-            staffRepository.save(staff);
-            emailService.sendSimpleEmail(
-                email,
-                "Your Temporary Password",
-                "Your new temporary password is: " + tempPassword + "\nPlease login and change your password immediately."
-            );
-        } else {
-            throw new IllegalArgumentException("Email not found in system");
-        }
-    }
-    
-    private String generateTempPassword() {
-        int length = 8;
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
     }
 
 }

@@ -6,6 +6,7 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.dto.ForgotPas
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Customer;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Staff;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.service.UserService;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.service.AuthService;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.StaffRepository;
 
@@ -42,6 +43,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -217,10 +221,10 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<String> forgotPasswordByUsername(@RequestBody ForgotPasswordRequest request) {
         try {
-            userService.forgotPasswordAndSendEmail(request.getEmail());
-            return ResponseEntity.ok("Temporary password sent to your email.");
+            authService.processForgotPasswordByUsername(request.getUsername());
+            return ResponseEntity.ok("Temporary password has been sent to your email.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
