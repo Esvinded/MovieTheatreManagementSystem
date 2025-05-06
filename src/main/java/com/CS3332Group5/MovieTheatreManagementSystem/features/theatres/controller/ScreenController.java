@@ -5,13 +5,42 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service.S
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@RestController @RequestMapping("/api/screens") @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/screen")
+@RequiredArgsConstructor
 public class ScreenController {
+
     private final ScreenService service;
-    @GetMapping public List<ScreenDto> all(){return service.listAll();}
-    @PostMapping @ResponseStatus(HttpStatus.CREATED) public ScreenDto create(@RequestBody ScreenCreateRequest r){return service.create(r);}
-    @PutMapping("/{id}") public ScreenDto update(@PathVariable Long id,@RequestBody ScreenUpdateRequest r){return service.update(id,r);}
-    @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void delete(@PathVariable Long id){service.delete(id);}
+
+    /** GET /api/screen/get */
+    @GetMapping("/get")
+    public List<ScreenDto> getAll() {
+        return service.listAll();
+    }
+
+    /** POST /api/screen/set */
+    @PostMapping("/set")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ScreenDto setScreen(@RequestBody ScreenCreateRequest r) {
+        return service.create(r);
+    }
+
+    /** PUT /api/screen/update/{id} */
+    @PutMapping("/update/{id}")
+    public ScreenDto updateScreen(
+            @PathVariable Long id,
+            @RequestBody ScreenUpdateRequest r
+    ) {
+        return service.update(id, r);
+    }
+
+    /** DELETE /api/screen/delete/{id} */
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteScreen(@PathVariable Long id) {
+        service.delete(id);
+    }
 }

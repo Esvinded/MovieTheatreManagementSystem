@@ -5,13 +5,54 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.service.Mov
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@RestController @RequestMapping("/api/movies") @RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/movie")
+@RequiredArgsConstructor
 public class MovieController {
+
     private final MovieService service;
-    @GetMapping public List<MovieDto> all(){ return service.listAll(); }
-    @PostMapping @ResponseStatus(HttpStatus.CREATED) public MovieDto create(@RequestBody MovieCreateRequest r){ return service.create(r); }
-    @PutMapping("/{id}") public MovieDto update(@PathVariable Long id,@RequestBody MovieUpdateRequest r){ return service.update(id,r); }
-    @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void delete(@PathVariable Long id){ service.delete(id); }
+
+    /**
+     * Lấy danh sách tất cả phim
+     * GET /api/movie/get
+     */
+    @GetMapping("/get")
+    public List<MovieDto> getAll() {
+        return service.listAll();
+    }
+
+    /**
+     * Tạo mới một phim
+     * POST /api/movie/set
+     */
+    @PostMapping("/set")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MovieDto setMovie(@RequestBody MovieCreateRequest request) {
+        return service.create(request);
+    }
+
+    /**
+     * Cập nhật thông tin phim
+     * PUT /api/movie/update/{id}
+     */
+    @PutMapping("/update/{id}")
+    public MovieDto updateMovie(
+            @PathVariable Long id,
+            @RequestBody MovieUpdateRequest request
+    ) {
+        return service.update(id, request);
+    }
+
+    /**
+     * Xóa phim
+     * DELETE /api/movie/delete/{id}
+     */
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteMovie(@PathVariable Long id) {
+        service.delete(id);
+    }
 }
