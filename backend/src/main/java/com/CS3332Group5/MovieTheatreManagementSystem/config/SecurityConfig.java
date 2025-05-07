@@ -26,8 +26,12 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**"
                 ).permitAll()
-                // Allow public access to common pages and static resources
-                .requestMatchers("/customer", "/staff", "/css/**", "/js/**").permitAll()
+                // Profile endpoints: require login
+                .requestMatchers(
+                    "/api/customer/**"
+                ).authenticated()
+                // Static resources
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // Secure all other endpoints
                 .anyRequest().authenticated()
             )
