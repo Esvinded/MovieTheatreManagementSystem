@@ -11,13 +11,13 @@ public class CreateBookingRequest {
 
     @NotNull(message = "Danh sách ghế không được để trống")
     @Size(min = 1, message = "Phải chọn ít nhất 1 ghế")
-    private List<String> seatCodes;
+    private List<Long> seatIds;
 
     public CreateBookingRequest() {}
 
-    public CreateBookingRequest(Long showtimeId, List<String> seatCodes) {
+    public CreateBookingRequest(Long showtimeId, List<Long> seatIds) {
         this.showtimeId = showtimeId;
-        this.seatCodes = seatCodes;
+        this.seatIds = seatIds;
     }
 
     public Long getShowtimeId() {
@@ -28,11 +28,11 @@ public class CreateBookingRequest {
         this.showtimeId = showtimeId;
     }
 
-    public List<String> getSeatCodes() {
-        return seatCodes;
+    public List<Long> getSeatIds() {
+        return seatIds;
     }
 
-    public void setSeatCodes(List<String> seatCodes) {
-        this.seatCodes = seatCodes;
+    public void setSeatIds(List<Long> seatIds) {
+        this.seatIds = seatIds;
     }
 }

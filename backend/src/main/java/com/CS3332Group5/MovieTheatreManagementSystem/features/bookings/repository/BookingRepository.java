@@ -4,6 +4,7 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.reposito
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.Booking;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingStatus;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.SeatStatus;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -41,5 +42,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Booking findBookingById(Long id);
 
-    List<Booking> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<Booking> findByCustomerOrderByCreatedAtDesc(Customer customer);
 }

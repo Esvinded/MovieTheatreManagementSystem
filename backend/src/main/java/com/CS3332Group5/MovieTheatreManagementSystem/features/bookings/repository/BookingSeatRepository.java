@@ -16,4 +16,6 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> 
     @Query("SELECT COUNT(bs) > 0 FROM BookingSeat bs " +
            "WHERE bs.booking.showtimeId = ?1 AND bs.seatCode = ?2 AND bs.status IN ?3")
     boolean existsByShowtimeIdAndSeatCodeAndStatusIn(Long showtimeId, String seatCode, List<SeatStatus> statuses);
+
+    boolean existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(Long showtimeId, Long seatId, List<SeatStatus> statuses);
 }

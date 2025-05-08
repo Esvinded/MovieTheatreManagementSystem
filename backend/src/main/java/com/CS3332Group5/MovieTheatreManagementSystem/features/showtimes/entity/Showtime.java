@@ -1,75 +1,36 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity;
 
+import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "showtimes")
-public class Showtime {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Showtime extends BaseEntity {
 
     @NotNull
-    @Column(name = "theatre_id", nullable = false)
-    private Long theatreId;
-
+    private OffsetDateTime startTime;
     @NotNull
-    @Column(name = "movie_id", nullable = false)
-    private Long movieId;
+    private OffsetDateTime endTime;
 
-    @NotNull
-    @Column(name = "start_time", nullable = false)
-    private Instant startTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id")
+    private Movie movie;
 
-    @NotNull
-    @Column(name = "end_time", nullable = false)
-    private Instant endTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "screen_id")
+    private Screen screen;
 
-    public Showtime() {}
-
-    public Showtime(Long theatreId, Long movieId, Instant startTime, Instant endTime) {
-        this.theatreId = theatreId;
-        this.movieId   = movieId;
-        this.startTime = startTime;
-        this.endTime   = endTime;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Long getTheatreId() {
-        return theatreId;
-    }
-
-    public void setTheatreId(Long theatreId) {
-        this.theatreId = theatreId;
-    }
-
-    public Long getMovieId() {
-        return movieId;
-    }
-
-    public void setMovieId(Long movieId) {
-        this.movieId = movieId;
-    }
-
-    public Instant getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Instant startTime) {
-        this.startTime = startTime;
-    }
-
-    public Instant getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Instant endTime) {
-        this.endTime = endTime;
-    }
+    // getters & setters
+    public OffsetDateTime getStartTime() { return startTime; }
+    public void setStartTime(OffsetDateTime startTime) { this.startTime = startTime; }
+    public OffsetDateTime getEndTime() { return endTime; }
+    public void setEndTime(OffsetDateTime endTime) { this.endTime = endTime; }
+    public Movie getMovie() { return movie; }
+    public void setMovie(Movie movie) { this.movie = movie; }
+    public Screen getScreen() { return screen; }
+    public void setScreen(Screen screen) { this.screen = screen; }
 }

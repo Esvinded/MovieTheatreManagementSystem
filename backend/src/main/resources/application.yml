@@ -11,19 +11,24 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+  security:
+    user:
+      name: demoUser
+      password: demoPass
 
 booking:
   cleanup:
-    rate: 60000  # 1 phút
-    hold-duration: 300  # 5 phút
+    rate: 60000      # scheduler chạy mỗi 60s
+    hold-duration: 300  # timeout = 5′
 
 logging:
   level:
     com.CS3332Group5.MovieTheatreManagementSystem: DEBUG
     org.springframework.web.socket: DEBUG
+    org.springframework.security: DEBUG
 
 vnpay:
-  tmnCode: ${VNPAY_TMN_CODE:DEMO}  # Thay bằng mã merchant thật khi deploy
-  hashSecret: ${VNPAY_HASH_SECRET:DEMO}  # Thay bằng khóa bí mật thật khi deploy
+  tmnCode: ${VNPAY_TMN_CODE:DEMO}
+  hashSecret: ${VNPAY_HASH_SECRET:DEMO}
   payUrl: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
-  returnUrl: ${VNPAY_RETURN_URL:http://localhost:8080/api/bookings/vnpay-return} 
+  returnUrl: ${VNPAY_RETURN_URL:http://localhost:8080/api/bookings/vnpay-return}
