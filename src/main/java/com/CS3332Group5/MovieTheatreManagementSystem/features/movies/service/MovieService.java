@@ -6,22 +6,35 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movi
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.repository.MovieRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
-@Service @RequiredArgsConstructor
+@Service
 public class MovieService {
     private final MovieRepository movieRepo;
     private final ShowtimeRepository showtimeRepo;
+
+    public MovieService(MovieRepository movieRepo, ShowtimeRepository showtimeRepo) {
+        this.movieRepo = movieRepo;
+        this.showtimeRepo = showtimeRepo;
+    }
+
     public List<MovieDto> listAll(){ return movieRepo.findAll().stream().map(this::map).toList();}
     @Transactional
     public MovieDto create(MovieCreateRequest r){
-        if(movieRepo.existsByTitleIgnoreCase(r.title()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Title exists");
-        Movie m=Movie.builder().title(r.title()).description(r.description()).duration(r.duration()).rating(r.rating()).status(Status.ACTIVE).build();
+        if (movieRepo.existsByTitleIgnoreCase(r.getTitle()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Title is duplicated");
+
+        // dùng khởi tạo thủ công thay vì builder
+        Movie m = new Movie();
+        m.setTitle(r.getTitle());
+        m.setDescription(r.getDescription());
+        m.setDuration(r.getDuration());
+        m.setRating(r.getRating());
+        m.setStatus(Status.ACTIVE);
+
         return map(movieRepo.save(m));
     }
     @Transactional
