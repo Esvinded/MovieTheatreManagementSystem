@@ -7,8 +7,6 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Custom
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Staff;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.service.UserService;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.auth.service.AuthService;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.StaffRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,27 +17,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
-    @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private StaffRepository staffRepository;
 
     @Autowired
     private UserService userService;
@@ -53,7 +39,6 @@ public class AuthController {
     // Customer Registration
     @PostMapping("/customer/register")
     public ResponseEntity<?> registerCustomer(@RequestBody Customer customer) {
-        // Validate customer fields
         Map<String, String> errors = validateCustomer(customer);
         if (!errors.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
@@ -72,39 +57,23 @@ public class AuthController {
     // Customer Login
     @PostMapping("/customer/login")
     public ResponseEntity<?> loginCustomer(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        Map<String, String> errors = validateLoginRequest(loginRequest);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
         try {
-            Optional<Customer> customerOptional = customerRepository.findByUsername(loginRequest.getUsername());
-            if (customerOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            }
-
-            Customer customer = customerOptional.get();
-
-            if (!passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            }
-
-            // Assign ROLE_CUSTOMER
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                customer.getUsername(), null, authorities
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-            return ResponseEntity.ok("Customer login successful");
+            String loginResponse = userService.loginCustomer(loginRequest, request);
+            return ResponseEntity.ok(loginResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (Exception e) {
-            System.out.println("Login failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
-
     // Staff Registration
     @PostMapping("/staff/register")
     public ResponseEntity<?> registerStaff(@RequestBody Staff staff) {
-        // Validate staff fields
         Map<String, String> errors = validateStaff(staff);
         if (!errors.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
@@ -123,30 +92,16 @@ public class AuthController {
     // Staff Login
     @PostMapping("/staff/login")
     public ResponseEntity<?> loginStaff(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        Map<String, String> errors = validateLoginRequest(loginRequest);
+        if (!errors.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
         try {
-            Optional<Staff> staffOptional = staffRepository.findByUsername(loginRequest.getUsername());
-            if (staffOptional.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            }
-
-            Staff staff = staffOptional.get();
-
-            if (!passwordEncoder.matches(loginRequest.getPassword(), staff.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            }
-
-            // Assign ROLE_STAFF
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_STAFF"));
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                staff.getUsername(), null, authorities
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-            return ResponseEntity.ok("Staff login successful");
+            String loginResponse = userService.loginStaff(loginRequest, request);
+            return ResponseEntity.ok(loginResponse);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         } catch (Exception e) {
-            System.out.println("Login failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
@@ -159,7 +114,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
         }
 
-        String username = authentication.getName(); // Get username from Spring Security
+        String username = authentication.getName();
 
         try {
             userService.changePassword(username, request.getOldPassword(), request.getNewPassword());
@@ -195,7 +150,7 @@ public class AuthController {
         if (password == null || password.trim().isEmpty()) {
             errors.put("password", "Password is required");
         }
-        if (email != null) { // Email is only validated for registration
+        if (email != null) {
             if (email.trim().isEmpty()) {
                 errors.put("email", "Email is required");
             } else if (!isValidEmail(email)) {

@@ -1,8 +1,15 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.user.service;
 
-import java.util.Optional;
+import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,25 +50,45 @@ public class UserService {
         staffRepository.save(staff);
     }
 
-    // Combined Login
-    public String login(LoginRequest loginRequest) {
-        Optional<Customer> customerOpt = customerRepository.findByUsername(loginRequest.getUsername());
-        if (customerOpt.isPresent()) {
-            Customer customer = customerOpt.get();
-            if (passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword())) {
-                return "Customer login successful! Welcome, " + customer.getUsername();
-            }
+    // Login Customer and Staff
+    public String loginCustomer(LoginRequest loginRequest, HttpServletRequest request) {
+        Customer customer = customerRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), customer.getPassword())) {
+            throw new IllegalArgumentException("Invalid username or password");
         }
 
-        Optional<Staff> staffOpt = staffRepository.findByUsername(loginRequest.getUsername());
-        if (staffOpt.isPresent()) {
-            Staff staff = staffOpt.get();
-            if (passwordEncoder.matches(loginRequest.getPassword(), staff.getPassword())) {
-                return "Staff login successful! Welcome, " + staff.getUsername();
-            }
+        // Assign ROLE_CUSTOMER
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                customer.getUsername(), null, authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+        return "Customer login successful";
+    }
+
+    public String loginStaff(LoginRequest loginRequest, HttpServletRequest request) {
+        Staff staff = staffRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), staff.getPassword())) {
+            throw new IllegalArgumentException("Invalid username or password");
         }
 
-        throw new IllegalArgumentException("Invalid username or password");
+        // Assign ROLE_STAFF
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_STAFF"));
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                staff.getUsername(), null, authorities
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+        return "Staff login successful";
     }
 
     // Change Password
