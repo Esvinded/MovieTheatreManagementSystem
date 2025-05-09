@@ -1,4 +1,4 @@
-package com.CS3332Group5.MovieTheatreManagementSystem.features.screens.controller;
+package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.controller;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service.ScreenService;
