@@ -1,11 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity;
 
 import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 @Entity
 public class Staff extends User {
 
