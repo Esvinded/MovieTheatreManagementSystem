@@ -4,7 +4,7 @@ import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.repository.SeatRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.ScreenRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;

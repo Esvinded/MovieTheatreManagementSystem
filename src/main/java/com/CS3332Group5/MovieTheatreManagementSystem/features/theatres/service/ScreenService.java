@@ -1,7 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.ScreenRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.ScreenCreateRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.ScreenDto;

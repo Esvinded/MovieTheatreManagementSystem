@@ -1,1 +1,2 @@
-package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto; public record TheatreCreateRequest(String name, String address){}
+package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto;
+public record TheatreCreateRequest(String name, String address){}

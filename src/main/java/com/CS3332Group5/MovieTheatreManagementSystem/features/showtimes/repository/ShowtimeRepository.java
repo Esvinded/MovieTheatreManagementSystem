@@ -17,5 +17,5 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     /* ---- hàm xoá showtime cũ ---- */
     @Transactional
     @Modifying              // bắt buộc với query delete/update
-    int deleteByStartTimeBefore(OffsetDateTime time);
+    void deleteByStartTimeBefore(OffsetDateTime time);
 }

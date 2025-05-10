@@ -2,7 +2,7 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;

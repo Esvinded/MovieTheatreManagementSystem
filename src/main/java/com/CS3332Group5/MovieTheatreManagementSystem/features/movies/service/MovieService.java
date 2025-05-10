@@ -27,12 +27,10 @@ public class MovieService {
         if (movieRepo.existsByTitleIgnoreCase(r.getTitle()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Title is duplicated");
 
-        // dùng khởi tạo thủ công thay vì builder
+        // dùng khởi tạo thủ công vì builder
         Movie m = new Movie();
         m.setTitle(r.getTitle());
-        m.setDescription(r.getDescription());
         m.setDuration(r.getDuration());
-        m.setRating(r.getRating());
         m.setStatus(Status.ACTIVE);
 
         return map(movieRepo.save(m));
@@ -40,7 +38,7 @@ public class MovieService {
     @Transactional
     public MovieDto update(Long id, MovieUpdateRequest r){
         Movie m=movieRepo.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Not found"));
-        m.setTitle(r.title()); m.setDescription(r.description()); m.setDuration(r.duration()); m.setRating(r.rating()); m.setStatus(r.status());
+        m.setTitle(r.title()); m.setDuration(r.duration()); m.setStatus(r.status());
         return map(m);
     }
     @Transactional
@@ -48,5 +46,5 @@ public class MovieService {
         if(showtimeRepo.existsByMovie_Id(id)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Has showtimes");
         movieRepo.deleteById(id);
     }
-    private MovieDto map(Movie m){return new MovieDto(m.getId(),m.getTitle(),m.getDescription(),m.getDuration(),m.getRating(),m.getStatus());}
+    private MovieDto map(Movie m){return new MovieDto(m.getId(),m.getTitle(),m.getDuration(),m.getStatus());}
 }

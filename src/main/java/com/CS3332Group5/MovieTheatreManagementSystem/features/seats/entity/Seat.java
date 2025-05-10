@@ -1,7 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
 import jakarta.persistence.*;
 
 /**
