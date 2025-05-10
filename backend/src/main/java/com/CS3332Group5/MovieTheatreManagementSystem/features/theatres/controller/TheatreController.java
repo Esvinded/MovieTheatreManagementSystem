@@ -1,46 +1,28 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.controller;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.*;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service.TheatreService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
 
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.TheatreCreateRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.TheatreDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service.TheatreService;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/theatre")
-@RequiredArgsConstructor
+@RequestMapping("/api/theatres")
 public class TheatreController {
+    private final TheatreService theatreService;
 
-    private final TheatreService service;
-
-    /** GET /api/theatre/get */
-    @GetMapping("/get")
-    public List<TheatreDto> getAll() {
-        return service.listAll();
+    public TheatreController(TheatreService theatreService) {
+        this.theatreService = theatreService;
     }
 
-    /** POST /api/theatre/set */
-    @PostMapping("/set")
-    @ResponseStatus(HttpStatus.CREATED)
-    public TheatreDto setTheatre(@RequestBody TheatreCreateRequest r) {
-        return service.create(r);
+    @GetMapping
+    public List<TheatreDto> listAll() {
+        return theatreService.listAll();
     }
 
-    /** PUT /api/theatre/update/{id} */
-    @PutMapping("/update/{id}")
-    public TheatreDto updateTheatre(
-            @PathVariable Long id,
-            @RequestBody TheatreUpdateRequest r
-    ) {
-        return service.update(id, r);
-    }
-
-    /** DELETE /api/theatre/delete/{id} */
-    @DeleteMapping("/delete/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTheatre(@PathVariable Long id) {
-        service.delete(id);
+    @PostMapping
+    public TheatreDto create(@RequestBody TheatreCreateRequest dto) {
+        return theatreService.create(dto);
     }
 }
