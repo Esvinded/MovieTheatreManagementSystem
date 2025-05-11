@@ -33,13 +33,16 @@ public class UserService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EmailService emailService;
-
     // Register Customer
     public void registerCustomer(Customer customer) {
         validateRegistration(customer.getUsername(), customer.getEmail());
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+    
+        // Set default profile picture if not provided
+        if (customer.getProfileImageUrl() == null || customer.getProfileImageUrl().isEmpty()) {
+            customer.setProfileImageUrl("/uploads/default-profile-picture.png");
+        }
+        
         customerRepository.save(customer);
     }
 

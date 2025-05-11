@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,11 +20,16 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
 
-    private static final String UPLOAD_DIR = "uploads/";
+    private static final String UPLOAD_DIR = "C:/uploads/";
 
     public CustomerProfileDTO getProfileByUsername(String username) {
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        String profileImageUrl = customer.getProfileImageUrl();
+            if (profileImageUrl == null || profileImageUrl.isEmpty()) {
+                profileImageUrl = "/uploads/default-profile-picture.png"; // Use default if no profile picture is set
+            }
 
         return new CustomerProfileDTO(
             customer.getUsername(),
@@ -33,49 +37,45 @@ public class CustomerService {
             customer.getFullName(),
             customer.getPhoneNumber(),
             customer.getDateOfBirth(),
-            customer.getProfileImageUrl()
+            profileImageUrl
         );
-                
     }
 
     public void updateProfile(String username, CustomerProfileDTO updatedProfile) {
-        try {
-            System.out.println("Fetching customer by username: " + username);
-            Customer customer = customerRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-            System.out.println("Updating customer details...");
-            System.out.println("Full Name: " + updatedProfile.getFullName());
-            System.out.println("Phone Number: " + updatedProfile.getPhoneNumber());
-            System.out.println("Date of Birth: " + updatedProfile.getDateOfBirth());
+        customer.setFullName(updatedProfile.getFullName());
+        customer.setPhoneNumber(updatedProfile.getPhoneNumber());
+        customer.setDateOfBirth(updatedProfile.getDateOfBirth());
 
-            customer.setFullName(updatedProfile.getFullName());
-            customer.setPhoneNumber(updatedProfile.getPhoneNumber());
-            customer.setDateOfBirth(updatedProfile.getDateOfBirth());
-
-            customerRepository.save(customer);
-            System.out.println("Customer profile updated successfully.");
-        } catch (Exception e) {
-            System.out.println("Error in updateProfile: " + e.getMessage());
-            e.printStackTrace(); // Log the full stack trace
-            throw e;
-        }
+        customerRepository.save(customer);
     }
 
     public void updateProfilePicture(String username, MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("No file uploaded or file is empty");
+        }
+
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        String contentType = imageFile.getContentType();
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new IllegalArgumentException("Invalid file type. Only JPEG and PNG are allowed.");
+        }
 
         String extension = Optional.ofNullable(imageFile.getOriginalFilename())
                 .filter(f -> f.contains("."))
                 .map(f -> f.substring(imageFile.getOriginalFilename().lastIndexOf(".")))
-                .orElse("");
+                .orElseThrow(() -> new IllegalArgumentException("File must have a valid extension"));
 
         String filename = UUID.randomUUID() + extension;
 
         try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
+            Files.createDirectories(Paths.get(UPLOAD_DIR)); // Ensure the directory exists
             String filepath = UPLOAD_DIR + filename;
+
             imageFile.transferTo(new File(filepath));
 
             customer.setProfileImageUrl("/" + filepath);
