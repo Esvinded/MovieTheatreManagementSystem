@@ -10,12 +10,18 @@ import java.util.List;
 @Repository
 public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> {
     
-    @Query("SELECT bs FROM BookingSeat bs WHERE bs.booking.showtimeId = ?1 AND bs.status IN ?2")
+    @Query("SELECT bs FROM BookingSeat bs WHERE bs.booking.showtime.id = ?1 AND bs.status IN ?2")
     List<BookingSeat> findByShowtimeIdAndStatusIn(Long showtimeId, List<SeatStatus> statuses);
     
-    @Query("SELECT COUNT(bs) > 0 FROM BookingSeat bs " +
-           "WHERE bs.booking.showtimeId = ?1 AND bs.seatCode = ?2 AND bs.status IN ?3")
-    boolean existsByShowtimeIdAndSeatCodeAndStatusIn(Long showtimeId, String seatCode, List<SeatStatus> statuses);
+    @Query(
+        "SELECT COUNT(bs) > 0 FROM BookingSeat bs WHERE bs.booking.showtime.id = ?1 AND bs.seat.rowLabel = ?2 AND bs.seat.colNumber = ?3 AND bs.status IN ?4"
+    )
+    boolean existsByShowtimeIdAndRowLabelAndColNumberAndStatusIn(
+        Long showtimeId, 
+        String rowLabel, 
+        int colNumber, 
+        List<SeatStatus> statuses
+    );
 
     boolean existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(Long showtimeId, Long seatId, List<SeatStatus> statuses);
 }

@@ -1,7 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.seats.controller;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.dto.*;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.service.SeatService;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.service.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

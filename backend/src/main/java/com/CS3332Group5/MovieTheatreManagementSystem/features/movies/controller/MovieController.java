@@ -2,7 +2,6 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.movies.controller
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.service.MovieService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,10 +9,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/movie")
-@RequiredArgsConstructor
 public class MovieController {
 
     private final MovieService service;
+
+    public MovieController(MovieService service) {
+        this.service = service;
+    }
 
     /**
      * Lấy danh sách tất cả phim

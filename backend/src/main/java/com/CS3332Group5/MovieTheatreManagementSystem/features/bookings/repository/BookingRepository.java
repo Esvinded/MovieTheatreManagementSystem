@@ -28,13 +28,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("""
       SELECT CASE WHEN COUNT(bs)>0 THEN TRUE ELSE FALSE END
       FROM Booking b JOIN b.seats bs
-      WHERE b.showtimeId = :showtimeId
-        AND bs.seatCode = :seatCode
+      WHERE b.showtime.id = :showtimeId
+        AND bs.seat.rowLabel = :rowLabel
+        AND bs.seat.colNumber = :colNumber
         AND bs.status IN :statuses
       """)
-    boolean existsByShowtimeIdAndSeatCodeAndStatuses(
+    boolean existsByShowtimeIdAndRowLabelAndColNumberAndStatuses(
       @Param("showtimeId") Long showtimeId,
-      @Param("seatCode") String seatCode,
+      @Param("rowLabel") String rowLabel,
+      @Param("colNumber") int colNumber,
       @Param("statuses") List<SeatStatus> statuses
     );
 

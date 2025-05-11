@@ -1,49 +1,63 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "screens")
-public class Screen extends BaseEntity {
+public class Screen {
 
-    @NotBlank
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String name;
 
-    @Min(1)
-    private Integer capacity;
+    private int capacity;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
-    /* Relations */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theatre_id")
     private Theatre theatre;
 
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Seat> seats = new HashSet<>();
+    private List<Seat> seats = new ArrayList<>();
 
-    @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Showtime> showtimes = new HashSet<>();
+    /* Constructors */
+    public Screen() {}
 
-    // getters & setters
+    public Screen(String name, int capacity, Theatre theatre) {
+        this.name = name;
+        this.capacity = capacity;
+        this.theatre = theatre;
+    }
+
+    /* Getters & Setters */
+    public Long getId() { return id; }
+
     public String getName() { return name; }
+
     public void setName(String name) { this.name = name; }
-    public Integer getCapacity() { return capacity; }
-    public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public int getCapacity() { return capacity; }
+
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+
     public Status getStatus() { return status; }
+
     public void setStatus(Status status) { this.status = status; }
+
     public Theatre getTheatre() { return theatre; }
+
     public void setTheatre(Theatre theatre) { this.theatre = theatre; }
-    public Set<Seat> getSeats() { return seats; }
-    public void setSeats(Set<Seat> seats) { this.seats = seats; }
-    public Set<Showtime> getShowtimes() { return showtimes; }
-    public void setShowtimes(Set<Showtime> showtimes) { this.showtimes = showtimes; }
+
+    public List<Seat> getSeats() { return seats; }
+
+    public void setSeats(List<Seat> seats) { this.seats = seats; }
 }

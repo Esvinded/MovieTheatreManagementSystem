@@ -11,7 +11,8 @@ import jakarta.validation.constraints.NotNull;
 public class SeatCreateRequest {
 
     @NotNull private Long    screenId;
-    @NotBlank private String rowLabel;
+    @NotBlank
+    public String rowLabel;
     @Min(1)   private int    colNumber;
     @NotNull  private Status status;
 
@@ -28,4 +29,6 @@ public class SeatCreateRequest {
 
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
+
+
 }

@@ -13,7 +13,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -33,20 +33,43 @@ public class BookingControllerTest {
     @Autowired
     private ShowtimeRepository showtimeRepository;
 
+    @Autowired
+    private com.CS3332Group5.MovieTheatreManagementSystem.features.seats.repository.SeatRepository seatRepository;
+
+    @Autowired
+    private com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.ScreenRepository screenRepository;
+
     private Long bookingId;
 
     @BeforeEach
     void setup() throws Exception {
+        // Tạo screen test
+        var screen = new com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen();
+        screen.setName("TestScreen");
+        screen.setCapacity(20);
+        screen = screenRepository.save(screen);
+
+        // Tạo 2 ghế test
+        var seat1 = new com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat();
+        seat1.setRowLabel("A");
+        seat1.setColNumber(1);
+        seat1.setScreen(screen);
+        seat1 = seatRepository.save(seat1);
+        var seat2 = new com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat();
+        seat2.setRowLabel("A");
+        seat2.setColNumber(2);
+        seat2.setScreen(screen);
+        seat2 = seatRepository.save(seat2);
+
         // Tạo showtime test
         Showtime showtime = new Showtime();
-        showtime.setTheatreId(1L);
-        showtime.setMovieId(1L);
-        showtime.setStartTime(Instant.now().plusSeconds(86400)); // +1 day
-        showtime.setEndTime(Instant.now().plusSeconds(86400 + 7200)); // +1 day +2 hours
+        showtime.setScreen(screen);
+        showtime.setStartTime(OffsetDateTime.now().plusDays(1)); // +1 day
+        showtime.setEndTime(OffsetDateTime.now().plusDays(1).plusHours(2)); // +1 day +2 hours
         showtime = showtimeRepository.save(showtime);
 
-        // Tạo booking test
-        CreateBookingRequest req = new CreateBookingRequest(showtime.getId(), List.of("A1","A2"));
+        // Tạo booking test với ID ghế
+        CreateBookingRequest req = new CreateBookingRequest(showtime.getId(), List.of(seat1.getId(), seat2.getId()));
         String json = objectMapper.writeValueAsString(req);
 
         String response = mockMvc.perform(post("/api/bookings")

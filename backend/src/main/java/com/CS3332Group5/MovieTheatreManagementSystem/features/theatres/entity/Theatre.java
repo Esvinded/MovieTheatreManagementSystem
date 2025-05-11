@@ -1,34 +1,53 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screens.entity.Screen;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "theatres")
-public class Theatre extends BaseEntity {
+public class Theatre {
 
-    @NotBlank
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String name;
+
     private String address;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
     @OneToMany(mappedBy = "theatre", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Screen> screens = new HashSet<>();
+    private List<Screen> screens = new ArrayList<>();
 
-    // getters & setters
+    /* Constructors */
+    public Theatre() {}
+
+    public Theatre(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
+
+    /* Getters & Setters */
+    public Long getId() { return id; }
+
     public String getName() { return name; }
+
     public void setName(String name) { this.name = name; }
+
     public String getAddress() { return address; }
+
     public void setAddress(String address) { this.address = address; }
+
     public Status getStatus() { return status; }
+
     public void setStatus(Status status) { this.status = status; }
-    public Set<Screen> getScreens() { return screens; }
-    public void setScreens(Set<Screen> screens) { this.screens = screens; }
+
+    public List<Screen> getScreens() { return screens; }
+
+    public void setScreens(List<Screen> screens) { this.screens = screens; }
 }

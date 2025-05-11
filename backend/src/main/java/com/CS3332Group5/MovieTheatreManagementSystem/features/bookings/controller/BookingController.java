@@ -11,8 +11,6 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Custom
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -41,7 +39,7 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<Booking> create(
         @Valid @RequestBody CreateBookingRequest req,
-        @AuthenticationPrincipal UserDetails userDetails
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
         return ResponseEntity.ok(bookingService.startBooking(req, userId));
@@ -52,7 +50,7 @@ public class BookingController {
     public ResponseEntity<Booking> toggleSeat(
         @PathVariable Long id,
         @PathVariable Long seatId,
-        @AuthenticationPrincipal UserDetails userDetails
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
         Booking booking = bookingService.findById(id);
@@ -66,7 +64,7 @@ public class BookingController {
     @PostMapping("/{id}/confirm")
     public ResponseEntity<Booking> confirm(
         @PathVariable Long id,
-        @AuthenticationPrincipal UserDetails userDetails
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
         Booking booking = bookingService.findById(id);
@@ -86,7 +84,7 @@ public class BookingController {
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(
         @PathVariable Long id,
-        @AuthenticationPrincipal UserDetails userDetails
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());
         Booking booking = bookingService.findById(id);
@@ -99,7 +97,7 @@ public class BookingController {
 
     // 6. Get user's booking history
     @GetMapping("/my-bookings")
-    public ResponseEntity<List<Booking>> getMyBookings(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<Booking>> getMyBookings(@org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
         Long userId = Long.parseLong(userDetails.getUsername());
         Customer customer = customerRepository.findById(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
@@ -110,7 +108,7 @@ public class BookingController {
     @PostMapping("/{id}/pay")
     public ResponseEntity<String> createPayment(
         @PathVariable Long id,
-        @AuthenticationPrincipal UserDetails userDetails,
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails,
         HttpServletRequest request
     ) {
         Long userId = Long.parseLong(userDetails.getUsername());

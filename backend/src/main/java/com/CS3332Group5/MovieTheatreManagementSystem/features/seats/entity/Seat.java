@@ -1,76 +1,50 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 
 /**
- * Một ghế ngồi trong một screen.
+ * Entity lưu thông tin ghế.
  */
 @Entity
-@Table(name = "seats",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"screen_id", "row_label", "col_number"}))
-public class Seat extends BaseEntity {
+@Table(name = "seats")
+public class Seat {
 
-    @Min(1)
-    @Column(name = "col_number", nullable = false)
-    private int colNumber;            // số ghế trong hàng (1,2,3…)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @NotNull
-    @Column(name = "row_label", length = 5, nullable = false)
-    private String rowLabel;          // ký hiệu hàng (A,B,C…)
+    private String rowLabel;           // Ký hiệu hàng (A, B, C …)
 
-    @NotNull
+    @Column(name = "col_number")
+    private int colNumber;             // Số ghế trong hàng
+
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "screen_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "screen_id")    // FK → screens.id
     private Screen screen;
 
-    /* ---------- constructors ---------- */
+    /* ---------- Constructors ---------- */
     public Seat() { }
 
-    public Seat(int colNumber, String rowLabel, Status status, Screen screen) {
-        this.colNumber = colNumber;
+    public Seat(String rowLabel, int colNumber, Status status, Screen screen) {
         this.rowLabel  = rowLabel;
+        this.colNumber = colNumber;
         this.status    = status;
         this.screen    = screen;
     }
 
-    /* ---------- getters & setters ---------- */
-    public int getColNumber() {
-        return colNumber;
-    }
-
-    public void setColNumber(int colNumber) {
-        this.colNumber = colNumber;
-    }
-
-    public String getRowLabel() {
-        return rowLabel;
-    }
-
-    public void setRowLabel(String rowLabel) {
-        this.rowLabel = rowLabel;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Screen getScreen() {
-        return screen;
-    }
-
-    public void setScreen(Screen screen) {
-        this.screen = screen;
-    }
+    /* ---------- Getters & Setters ---------- */
+    public Long getId()                     { return id; }
+    public String getRowLabel()             { return rowLabel; }
+    public void setRowLabel(String rowLabel){ this.rowLabel = rowLabel; }
+    public int getColNumber()               { return colNumber; }
+    public void setColNumber(int colNumber) { this.colNumber = colNumber; }
+    public Status getStatus()               { return status; }
+    public void setStatus(Status status)    { this.status = status; }
+    public Screen getScreen()               { return screen; }
+    public void setScreen(Screen screen)    { this.screen = screen; }
 }
