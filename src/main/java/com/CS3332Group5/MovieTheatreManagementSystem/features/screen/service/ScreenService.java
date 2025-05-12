@@ -1,94 +1,92 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.screen.service;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.dto.SeatDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenCreateRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenDto;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenUpdateRequest;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.*;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.TheatreRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ScreenService {
 
-    private final ScreenRepository  repo;
+    private final ScreenRepository screenRepo;
     private final TheatreRepository theatreRepo;
-    private final ShowtimeRepository showtimeRepo;
 
-    public ScreenService(ScreenRepository repo,
-                         TheatreRepository theatreRepo,
-                         ShowtimeRepository showtimeRepo) {
-        this.repo        = repo;
+    public ScreenService(ScreenRepository screenRepo, TheatreRepository theatreRepo) {
+        this.screenRepo = screenRepo;
         this.theatreRepo = theatreRepo;
-        this.showtimeRepo = showtimeRepo;
     }
 
-    /* ---------- Query ---------- */
+    /* ---------- LISTING ---------- */
+
     public List<ScreenDto> listAll() {
-        return repo.findAll().stream().map(this::map).toList();
+        return screenRepo.findAll()
+                .stream()
+                .map(this::toScreenDto)
+                .collect(Collectors.toList());
     }
 
-    /* ---------- Mutation ---------- */
-    @Transactional
-    public ScreenDto create(ScreenCreateRequest r) {
-        Theatre th = theatreRepo.findById(r.theatreId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Theatre not found"));
-
-        Screen s = new Screen();
-        s.setName(r.name());
-        s.setCapacity(r.capacity());
-        s.setStatus(Status.ACTIVE);
-        s.setTheatre(th);
-
-        return map(repo.save(s));
+    public List<ScreenDto> listByTheatre(Long theatreId) {
+        return screenRepo.findByTheatreId(theatreId)
+                .stream()
+                .map(this::toScreenDto)
+                .collect(Collectors.toList());
     }
 
-    @Transactional
-    public ScreenDto update(Long id, ScreenUpdateRequest r) {
-        Screen s = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Screen not found"));
+    public List<SeatDto> listSeatsByScreen(Long screenId) {
+        Screen screen = screenRepo.findById(screenId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Screen not found"));
 
-        /* nếu chuyển sang INACTIVE nhưng còn suất chiếu tương lai → chặn */
-        if (r.status() == Status.INACTIVE
-                && showtimeRepo.existsByScreen_IdAndStartTimeAfter(id, OffsetDateTime.now())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Has upcoming showtimes");
+        return screen.getSeats()
+                .stream()
+                .map(this::toSeatDto)
+                .collect(Collectors.toList());
+    }
+
+    /* ---------- CREATE ---------- */
+
+    @Transactional
+    public ScreenDto create(ScreenCreateRequest req) {
+
+        Theatre theatre = theatreRepo.findById(req.getTheatreId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Theatre not found"));
+
+        long current = screenRepo.countByTheatreId(theatre.getId());
+        if (current >= theatre.getTotalScreens()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Total screens exceeded: " + theatre.getTotalScreens());
         }
 
-        s.setName(r.name());
-        s.setCapacity(r.capacity());
-        s.setStatus(r.status());
+        Screen screen = new Screen();
+        BeanUtils.copyProperties(req, screen);      // map từ request
+        screen.setTheatre(theatre);
 
-        return map(s);
+        return toScreenDto(screenRepo.save(screen));
     }
 
-    @Transactional
-    public void delete(Long id) {
-        if (showtimeRepo.existsByScreen_Id(id)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "Has showtimes");
-        }
-        repo.deleteById(id);
+    /* ---------- PRIVATE HELPERS ---------- */
+
+    private ScreenDto toScreenDto(Screen s) {
+        ScreenDto dto = new ScreenDto();
+        BeanUtils.copyProperties(s, dto);
+        dto.setTheatreId(s.getTheatre().getId());   // nếu DTO có field này
+        return dto;
     }
 
-    /* ---------- Mapper ---------- */
-    private ScreenDto map(Screen s) {
-        return new ScreenDto(
-                s.getId(),
-                s.getName(),
-                s.getCapacity(),
-                s.getStatus()
-        );
+    private SeatDto toSeatDto(Seat seat) {
+        SeatDto dto = new SeatDto();
+        BeanUtils.copyProperties(seat, dto);
+        return dto;
     }
 }

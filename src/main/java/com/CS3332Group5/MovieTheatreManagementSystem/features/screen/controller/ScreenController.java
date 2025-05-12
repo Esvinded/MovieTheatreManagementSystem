@@ -2,8 +2,9 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.screen.controller
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenCreateRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenDto;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenUpdateRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.service.ScreenService;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.dto.SeatDto;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,34 +20,30 @@ public class ScreenController {
         this.service = service;
     }
 
-    /* ---------- READ ---------- */
-    // GET /api/screen/get
+    /* ---------- ENDPOINTS ---------- */
+
+    /** GET /api/screen/get */
     @GetMapping("/get")
-    public List<ScreenDto> getAll() {
+    public List<ScreenDto> all() {
         return service.listAll();
     }
 
-    /* ---------- CREATE ---------- */
-    // POST /api/screen/set
-    @PostMapping("/set")
+    /** GET /api/screen/get/theatre/{theatreId} */
+    @GetMapping("/get/theatre/{theatreId}")
+    public List<ScreenDto> byTheatre(@PathVariable Long theatreId) {
+        return service.listByTheatre(theatreId);
+    }
+
+    /** GET /api/screen/{screenId}/seats */
+    @GetMapping("/{screenId}/seats")
+    public List<SeatDto> seats(@PathVariable Long screenId) {
+        return service.listSeatsByScreen(screenId);
+    }
+
+    /** POST /api/screen */
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ScreenDto create(@RequestBody ScreenCreateRequest req) {
-        return service.create(req);
-    }
-
-    /* ---------- UPDATE ---------- */
-    // PUT /api/screen/update/{id}
-    @PutMapping("/update/{id}")
-    public ScreenDto update(@PathVariable Long id,
-                            @RequestBody ScreenUpdateRequest req) {
-        return service.update(id, req);
-    }
-
-    /* ---------- DELETE ---------- */
-    // DELETE /api/screen/delete/{id}
-    @DeleteMapping("/delete/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    public ScreenDto create(@Valid @RequestBody ScreenCreateRequest r) {
+        return service.create(r);
     }
 }

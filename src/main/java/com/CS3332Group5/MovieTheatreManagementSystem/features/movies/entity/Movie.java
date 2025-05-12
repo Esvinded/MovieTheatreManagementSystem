@@ -23,8 +23,6 @@ public class Movie extends BaseEntity {
     @NotNull
     private Duration duration;          // ISO-8601 (hh:mm:ss)
 
-    @DecimalMin("0.0") @DecimalMax("10.0")
-    private Double rating;
 
     /* ---------- NEW FIELD ---------- */
     /** URL đến poster (ảnh bìa phim). Có thể rỗng nếu chưa cập nhật */
@@ -49,8 +47,6 @@ public class Movie extends BaseEntity {
     public Duration getDuration()         { return duration; }
     public void     setDuration(Duration d){ this.duration = d; }
 
-    public Double getRating()             { return rating; }
-    public void   setRating(Double r)     { this.rating = r; }
 
     public String getPosterURL()          { return posterURL; }
     public void   setPosterURL(String url){ this.posterURL = url; }
