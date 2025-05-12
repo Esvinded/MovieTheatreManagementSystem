@@ -47,16 +47,16 @@ public class CustomerController {
         return ResponseEntity.ok("Profile updated successfully.");
     }
 
-    @PostMapping("/profile/picture")
+    @PutMapping("/profile/picture")
     public ResponseEntity<String> updateProfilePicture(
             Principal principal,
-            @RequestParam("image") MultipartFile imageFile
+            @RequestParam("profileImageUrl") String profileImageUrl
     ) {
         if (principal == null || principal.getName() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not authenticated");
         }
-
-        customerService.updateProfilePicture(principal.getName(), imageFile);
+    
+        customerService.updateProfilePicture(principal.getName(), profileImageUrl);
         return ResponseEntity.ok("Profile picture updated successfully.");
     }
 }
