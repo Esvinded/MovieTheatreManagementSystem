@@ -1,7 +1,8 @@
-package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity;
+package com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

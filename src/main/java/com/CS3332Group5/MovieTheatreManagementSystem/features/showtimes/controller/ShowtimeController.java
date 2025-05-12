@@ -16,12 +16,12 @@ public class ShowtimeController {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping ("/get")
     public List<ShowtimeDto> listAll() {
         return service.listAll();
     }
 
-    @PostMapping
+    @PostMapping ("/set")
     public ShowtimeDto create(@RequestBody ShowtimeCreateRequest req) {
         return service.create(req);
     }
