@@ -5,8 +5,8 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.S
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.repository.MovieRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.ScreenRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

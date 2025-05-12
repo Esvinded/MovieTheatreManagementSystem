@@ -16,12 +16,12 @@ public class TheatreController {
         this.theatreService = theatreService;
     }
 
-    @GetMapping
+    @GetMapping ("/get")
     public List<TheatreDto> listAll() {
         return theatreService.listAll();
     }
 
-    @PostMapping
+    @PostMapping ("/set")
     public TheatreDto create(@RequestBody TheatreCreateRequest dto) {
         return theatreService.create(dto);
     }

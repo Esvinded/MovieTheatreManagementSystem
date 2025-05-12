@@ -1,11 +1,11 @@
-package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service;
+package com.CS3332Group5.MovieTheatreManagementSystem.features.screen.service;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Screen;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.ScreenRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.ScreenCreateRequest;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.ScreenDto;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.ScreenUpdateRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenCreateRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenUpdateRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.TheatreRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
