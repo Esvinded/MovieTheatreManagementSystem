@@ -98,7 +98,7 @@ public class BookingService {
             bookingSeat.setSeat(seat);
             bookingSeat.setStatus(SeatStatus.RESERVED);
             bookingSeat.setReservedAt(Instant.now());
-            bookingSeat.setPrice(100000); // snapshot giá ghế, có thể thay đổi sau
+            bookingSeat.setPrice(calculateSeatPrice(seat)); // snapshot giá ghế, có thể thay đổi sau
             booking.getSeats().add(bookingSeat);
         }
         // Notify seat status changed
@@ -132,7 +132,7 @@ public class BookingService {
             bookingSeat.setSeat(seat);
             bookingSeat.setStatus(SeatStatus.RESERVED);
             bookingSeat.setReservedAt(Instant.now());
-            bookingSeat.setPrice(100000); // snapshot giá ghế, có thể thay đổi sau
+            bookingSeat.setPrice(calculateSeatPrice(seat)); // snapshot giá ghế, có thể thay đổi sau
             booking.getSeats().add(bookingSeat);
         }
         // Notify seat status changed
@@ -167,7 +167,7 @@ public class BookingService {
                 BookingSeat bs = new BookingSeat(seat);
                 bs.setStatus(SeatStatus.RESERVED);
                 // Nếu Seat chưa có trường price, dùng giá mặc định hoặc sửa lại entity Seat để có getPrice()
-                bs.setPrice(100000); // hoặc giá mặc định khác nếu cần
+                bs.setPrice(calculateSeatPrice(seat)); // hoặc giá mặc định khác nếu cần
                 booking.addSeat(bs);
             }
         }
@@ -260,5 +260,21 @@ public class BookingService {
         return booking.getSeats().stream()
             .mapToLong(BookingSeat::getPrice)
             .sum();
+    }
+
+    /**
+     * Tính giá vé dựa trên vị trí ghế (row, colNumber)
+     */
+    private int calculateSeatPrice(Seat seat) {
+        String row = seat.getRowLabel();
+        int col = seat.getColNumber();
+        // Ví dụ: Hàng D, E, F và ghế giữa (col 5-8) là VIP
+        if (("D".equalsIgnoreCase(row) || "E".equalsIgnoreCase(row) || "F".equalsIgnoreCase(row)) && col >= 5 && col <= 8) {
+            return 150000; // VIP
+        } else if (col == 1 || col == 10) {
+            return 80000; // Rìa
+        } else {
+            return 100000; // Thường
+        }
     }
 }
