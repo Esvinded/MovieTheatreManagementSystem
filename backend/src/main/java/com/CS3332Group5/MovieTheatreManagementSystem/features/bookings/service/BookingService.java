@@ -141,6 +141,42 @@ public class BookingService {
     }
 
     /**
+     * Toggle chọn/hủy chọn nhiều ghế (chỉ khi PENDING)
+     */
+    @Transactional
+    public Booking toggleSeats(Long bookingId, List<Long> seatIds) {
+        Booking booking = findById(bookingId);
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ được chọn/hủy ghế khi booking đang PENDING");
+        }
+        // Logic: Nếu seatId đã có thì hủy, chưa có thì thêm
+        for (Long seatId : seatIds) {
+            boolean exists = booking.getSeats().stream().anyMatch(bs -> bs.getSeat().getId().equals(seatId));
+            if (exists) {
+                booking.removeSeat(seatId);
+            } else {
+                Seat seat = seatRepository.findById(seatId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghế không tồn tại"));
+                // Check ghế đã bị giữ/đặt chưa
+                boolean isTaken = bookingSeatRepository.existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(
+                    booking.getShowtime().getId(), seatId, List.of(SeatStatus.RESERVED, SeatStatus.BOOKED)
+                );
+                if (isTaken) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã được giữ hoặc đặt");
+                }
+                BookingSeat bs = new BookingSeat(seat);
+                bs.setStatus(SeatStatus.RESERVED);
+                // Nếu Seat chưa có trường price, dùng giá mặc định hoặc sửa lại entity Seat để có getPrice()
+                bs.setPrice(100000); // hoặc giá mặc định khác nếu cần
+                booking.addSeat(bs);
+            }
+        }
+        bookingRepository.save(booking);
+        notificationService.notifySeatStatusChanged(booking.getShowtime().getId(), booking.getSeats());
+        return booking;
+    }
+
+    /**
      * Xác nhận booking (PENDING -> AWAITING_PAYMENT)
      */
     @Transactional

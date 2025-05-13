@@ -1,6 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.controller;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.CreateBookingRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.SeatBatchActionRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.Booking;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingSeat;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingStatus;
@@ -58,6 +59,21 @@ public class BookingController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
         return ResponseEntity.ok(bookingService.toggleSeat(id, seatId));
+    }
+
+    // 2. Select/Deselect multiple seats (batch)
+    @PatchMapping("/{id}/seats")
+    public ResponseEntity<Booking> toggleSeats(
+        @PathVariable Long id,
+        @RequestBody SeatBatchActionRequest req,
+        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+    ) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        Booking booking = bookingService.findById(id);
+        if (!booking.getCustomer().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
+        }
+        return ResponseEntity.ok(bookingService.toggleSeats(id, req.getSeatIds()));
     }
 
     // 3. Confirm booking
