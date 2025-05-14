@@ -1,6 +1,6 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.movies.dto;
 import java.time.Duration;
-public record MovieCreateRequest(String title,  Duration duration, String PosterURL) {
+public record MovieCreateRequest(String title,  Duration duration, String PosterURL, String description) {
     public String getTitle() {
         return title;
     }
@@ -13,6 +13,6 @@ public record MovieCreateRequest(String title,  Duration duration, String Poster
         return PosterURL;
     }
 
-
+    public String getDesciption () {return description;}
 
 }

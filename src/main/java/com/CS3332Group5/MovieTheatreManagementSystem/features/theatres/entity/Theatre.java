@@ -1,75 +1,37 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
+import  com.CS3332Group5.MovieTheatreManagementSystem.common.enums.*;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "theatres")
 public class Theatre {
 
-    /* ---------- FIELDS ---------- */
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, unique = true)
     private String name;
-
-    @NotBlank
-    @Column(nullable = false)
     private String address;
+    @Column(name = "total_screens", nullable = false)
+    private Integer totalScreen;
 
-    /** OPEN / CLOSED */
-    @NotBlank
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private Status status;
 
-    /** Số phòng chiếu – không cho UPDATE */
-    @NotNull
-    @Min(1)
-    @Column(nullable = false, updatable = false)
-    private Integer totalScreens;
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    /* ---------- RELATIONS ---------- */
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    @OneToMany(mappedBy = "theatre", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Screen> screens = new HashSet<>();
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    /* ---------- CONSTRUCTORS ---------- */
+    public Integer getTotalScreen() { return totalScreen; }
+    public void setTotalScreen(Integer totalScreen) { this.totalScreen = totalScreen; }
 
-    public Theatre() { }
-
-    public Theatre(String name, String address, String status, Integer totalScreens) {
-        this.name = name;
-        this.address = address;
-        this.status = status;
-        this.totalScreens = totalScreens;
-    }
-
-    /* ---------- GETTERS / SETTERS (không setter totalScreens) ---------- */
-
-    public Long getId()                     { return id; }
-    public void setId(Long id)              { this.id = id; }
-
-    public String getName()                 { return name; }
-    public void setName(String name)        { this.name = name; }
-
-    public String getAddress()              { return address; }
-    public void setAddress(String address)  { this.address = address; }
-
-    public String getStatus()               { return status; }
-    public void setStatus(String status)    { this.status = status; }
-
-    public Integer getTotalScreens()        { return totalScreens; }
-
-    public Set<Screen> getScreens()         { return screens; }
-    public void setScreens(Set<Screen> screens) { this.screens = screens; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 }

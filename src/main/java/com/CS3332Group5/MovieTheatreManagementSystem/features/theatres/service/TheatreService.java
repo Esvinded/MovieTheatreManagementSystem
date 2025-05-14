@@ -1,13 +1,12 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.TheatreDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.*;
+import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.TheatreRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TheatreService {
@@ -18,37 +17,40 @@ public class TheatreService {
         this.repo = repo;
     }
 
-    /* ---------- CREATE ---------- */
-
-    @Transactional
-    public TheatreDto create(TheatreDto dto) {
-        Theatre entity = new Theatre(
-                dto.getName(),
-                dto.getAddress(),
-                dto.getStatus(),
-                dto.getTotalScreens()
-        );
-        Theatre saved = repo.save(entity);
+    public TheatreDto create(TheatreCreateRequest r) {
+        Theatre t = new Theatre();
+        t.setName(r.getName());
+        t.setAddress(r.getAddress());
+        t.setTotalScreen(r.getTotalScreen());
+        t.setStatus(Status.ACTIVE);
+        Theatre saved = repo.save(t);
         return toDto(saved);
     }
 
-    /* ---------- LIST ---------- */
-
     public List<TheatreDto> listAll() {
-        return repo.findAll().stream()
+        return repo.findAll()
+                .stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    /* ---------- PRIVATE MAPPER ---------- */
+    public TheatreDto update(Long id, TheatreUpdateRequest r) {
+        Theatre t = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Theatre not found: " + id));
+        t.setName(r.getName());
+        t.setAddress(r.getAddress());
+        // giữ nguyên status cũ hoặc có thể thay đổi nếu cần
+        Theatre saved = repo.save(t);
+        return toDto(saved);
+    }
 
-    private TheatreDto toDto(Theatre t) {
-        TheatreDto dto = new TheatreDto();
-        dto.setId(t.getId());
-        dto.setName(t.getName());
-        dto.setAddress(t.getAddress());
-        dto.setStatus(t.getStatus());
-        dto.setTotalScreens(t.getTotalScreens());
-        return dto;
+    private TheatreDto toDto(Theatre e) {
+        return new TheatreDto(
+                e.getId(),
+                e.getName(),
+                e.getAddress(),
+                e.getTotalScreen(),
+                e.getStatus()
+        );
     }
 }
