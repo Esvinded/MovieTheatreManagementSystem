@@ -72,7 +72,7 @@ public class BookingService {
         booking.setCustomer(customer);
         booking.setShowtime(showtime);
         booking.setStatus(BookingStatus.PENDING);
-        booking.setCreatedAt(Instant.now());
+        booking.setBookingDate(Instant.now());
         // Snapshot movie title và start time
         booking.setMovieTitleSnapshot(showtime.getMovie().getTitle());
         booking.setStartTimeSnapshot(showtime.getStartTime());
