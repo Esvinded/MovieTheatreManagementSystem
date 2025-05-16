@@ -27,8 +27,8 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    @Column(name = "booking_date", nullable = false, updatable = false)
+    private Instant bookingDate = Instant.now();
 
     @OneToMany(mappedBy = "booking",
                cascade = CascadeType.ALL,
@@ -57,7 +57,7 @@ public class Booking {
     public Customer getCustomer() { return customer; }
     public com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime getShowtime() { return showtime; }
     public BookingStatus getStatus() { return status; }
-    public Instant getCreatedAt() { return createdAt; }
+    public Instant getBookingDate() { return bookingDate; }
     public List<BookingSeat> getSeats() { return seats; }
     public String getMovieTitleSnapshot() { return movieTitleSnapshot; }
     public java.time.OffsetDateTime getStartTimeSnapshot() { return startTimeSnapshot; }
@@ -66,7 +66,7 @@ public class Booking {
     public void setCustomer(Customer customer) { this.customer = customer; }
     public void setShowtime(com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime showtime) { this.showtime = showtime; }
     public void setStatus(BookingStatus status) { this.status = status; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setBookingDate(Instant bookingDate) { this.bookingDate = bookingDate; }
     public void setSeats(List<BookingSeat> seats) { this.seats = seats; }
     public void setMovieTitleSnapshot(String movieTitleSnapshot) { this.movieTitleSnapshot = movieTitleSnapshot; }
     public void setStartTimeSnapshot(java.time.OffsetDateTime startTimeSnapshot) { this.startTimeSnapshot = startTimeSnapshot; }
