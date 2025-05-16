@@ -43,6 +43,9 @@ public class Booking {
     @Column(name = "start_time_snapshot", nullable = false)
     private java.time.OffsetDateTime startTimeSnapshot;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Payment payment;
+
     public Booking() {}
 
     public Booking(Customer customer, com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime showtime) {
@@ -58,6 +61,7 @@ public class Booking {
     public List<BookingSeat> getSeats() { return seats; }
     public String getMovieTitleSnapshot() { return movieTitleSnapshot; }
     public java.time.OffsetDateTime getStartTimeSnapshot() { return startTimeSnapshot; }
+    public Payment getPayment() { return payment; }
 
     public void setCustomer(Customer customer) { this.customer = customer; }
     public void setShowtime(com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime showtime) { this.showtime = showtime; }
@@ -66,6 +70,7 @@ public class Booking {
     public void setSeats(List<BookingSeat> seats) { this.seats = seats; }
     public void setMovieTitleSnapshot(String movieTitleSnapshot) { this.movieTitleSnapshot = movieTitleSnapshot; }
     public void setStartTimeSnapshot(java.time.OffsetDateTime startTimeSnapshot) { this.startTimeSnapshot = startTimeSnapshot; }
+    public void setPayment(Payment payment) { this.payment = payment; }
 
     /** Thêm ghế vào booking, đảm bảo 2 chiều **/
     public void addSeat(BookingSeat seat) {
