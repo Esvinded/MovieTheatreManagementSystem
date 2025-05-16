@@ -277,4 +277,30 @@ public class BookingService {
             return 100000; // Thường
         }
     }
+
+    /**
+     * Clean up booking seats after a showtime ends: release seats for EXPIRED or CANCELLED bookings.
+     * BOOKED bookings are kept for history.
+     */
+    @Transactional
+    public void cleanUpBookingSeatsAfterShowtime(Long showtimeId) {
+        List<Booking> expiredBookings = bookingRepository.findByShowtimeIdInAndStatus(
+            List.of(showtimeId), BookingStatus.EXPIRED
+        );
+        List<Booking> cancelledBookings = bookingRepository.findByShowtimeIdInAndStatus(
+            List.of(showtimeId), BookingStatus.CANCELLED
+        );
+        for (Booking booking : expiredBookings) {
+            for (BookingSeat seat : booking.getSeats()) {
+                seat.setStatus(SeatStatus.RELEASED);
+            }
+            notificationService.notifySeatStatusChanged(showtimeId, booking.getSeats());
+        }
+        for (Booking booking : cancelledBookings) {
+            for (BookingSeat seat : booking.getSeats()) {
+                seat.setStatus(SeatStatus.RELEASED);
+            }
+            notificationService.notifySeatStatusChanged(showtimeId, booking.getSeats());
+        }
+    }
 }
