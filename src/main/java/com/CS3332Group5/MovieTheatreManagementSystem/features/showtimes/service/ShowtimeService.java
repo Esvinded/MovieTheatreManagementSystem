@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 public class ShowtimeService {
+
     private final ShowtimeRepository repo;
 
     public ShowtimeService(ShowtimeRepository repo) {
@@ -31,12 +32,13 @@ public class ShowtimeService {
     }
 
     private ShowtimeDto toDto(Showtime e) {
-        ShowtimeDto dto = new ShowtimeDto();
-        dto.setId(e.getId());
-        dto.setStartTime(e.getStartTime());
-        dto.setEndTime(e.getEndTime());
-        dto.setMovieId(e.getMovie().getId());
-        dto.setScreenId(e.getScreen().getId());
-        return dto;
+        // use the record's canonical constructor—no setters!
+        return new ShowtimeDto(
+                e.getId(),
+                e.getStartTime(),
+                e.getEndTime(),
+                e.getMovie().getId(),
+                e.getScreen().getId()
+        );
     }
 }

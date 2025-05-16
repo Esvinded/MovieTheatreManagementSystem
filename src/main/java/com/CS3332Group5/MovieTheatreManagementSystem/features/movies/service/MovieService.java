@@ -64,8 +64,13 @@ public class MovieService {
     /* ---------- DELETE ---------- */
     @Transactional
     public void delete(Long id) {
-        if (showtimeRepo.existsByMovie_Id(id))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Movie has showtimes");
+        // Prevent deletion if there are upcoming showtimes for this movie
+        if (showtimeRepo.existsByMovieId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot delete movie: there are upcoming showtimes"
+            );
+        }
         movieRepo.deleteById(id);
     }
 
