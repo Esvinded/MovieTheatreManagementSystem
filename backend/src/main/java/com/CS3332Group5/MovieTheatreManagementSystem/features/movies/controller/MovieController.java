@@ -25,7 +25,11 @@ public class MovieController {
     public List<MovieDto> getAll() {
         return service.listAll();
     }
-
+    /* API mới – lấy phim theo rạp */
+//    @GetMapping("/get/theater/{theaterId}")
+//    public List<MovieDto> byTheater(@PathVariable Long theaterId) {
+//        return service.listByTheater(theaterId);   // Gọi hàm mới, không ảnh hưởng API cũ
+//    }
     /**
      * Tạo mới một phim
      * POST /api/movie/set

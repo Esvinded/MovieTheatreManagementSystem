@@ -1,3 +1,0 @@
-package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto;
-
-public record ScreenCreateRequest(String name, Integer capacity, Long theatreId){}

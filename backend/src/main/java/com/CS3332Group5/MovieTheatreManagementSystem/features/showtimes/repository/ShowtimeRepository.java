@@ -2,20 +2,21 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.reposit
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
 
-    /* các hàm đã có */
-    boolean existsByMovie_Id(Long movieId);
-    boolean existsByScreen_Id(Long screenId);
-    boolean existsByScreen_IdAndStartTimeAfter(Long screenId, OffsetDateTime time);
+    /** All future showtimes for a given movie */
+    List<Showtime> findByMovieIdAndStartTimeAfter(Long movieId, OffsetDateTime now);
 
-    /* ---- hàm xoá showtime cũ ---- */
-    @Transactional
-    @Modifying              // bắt buộc với query delete/update
-    void deleteByStartTimeBefore(OffsetDateTime time);
+    /** All future showtimes for a given screen */
+    List<Showtime> findByScreenIdAndStartTimeAfter(Long screenId, OffsetDateTime now);
+
+    /** Delete all showtimes whose startTime is before the given cutoff */
+    long deleteByStartTimeBefore(OffsetDateTime cutoff);
+
+    /** Check whether any showtime exists for the given movie */
+    boolean existsByMovieId(Long movieId);
 }

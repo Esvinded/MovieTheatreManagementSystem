@@ -15,9 +15,10 @@ public class PostShowtimeCleanupJob {
         this.showtimeRepo = showtimeRepo;
     }
 
-    /** Chạy mỗi giờ – xoá showtimes đã bắt đầu từ quá khứ */
+    /** Runs at the top of every hour and deletes all past showtimes */
     @Scheduled(cron = "0 0 * * * *")
     public void cleanupPastShowtimes() {
-        showtimeRepo.deleteByStartTimeBefore(OffsetDateTime.now());
+        OffsetDateTime now = OffsetDateTime.now();
+        showtimeRepo.deleteByStartTimeBefore(now);
     }
 }

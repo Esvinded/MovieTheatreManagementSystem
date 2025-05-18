@@ -5,6 +5,7 @@ import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,34 +14,46 @@ import java.util.Set;
 @Table(name = "movies")
 public class Movie extends BaseEntity {
 
+    /* ---------- BASIC INFO ---------- */
     @NotBlank
     private String title;
+
     private String description;
 
     @NotNull
-    private Duration duration;
+    private Duration duration;          // ISO-8601 (hh:mm:ss)
 
-    @DecimalMin("0.0")
-    @DecimalMax("10.0")
-    private Double rating;
 
+    /* ---------- NEW FIELD ---------- */
+    /** URL đến poster (ảnh bìa phim). Có thể rỗng nếu chưa cập nhật */
+    private String posterURL;
+
+    /* ---------- STATUS & RELATIONS ---------- */
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "movie",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private Set<Showtime> showtimes = new HashSet<>();
 
-    // getters & setters
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public Duration getDuration() { return duration; }
-    public void setDuration(Duration duration) { this.duration = duration; }
-    public Double getRating() { return rating; }
-    public void setRating(Double rating) { this.rating = rating; }
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
-    public Set<Showtime> getShowtimes() { return showtimes; }
-    public void setShowtimes(Set<Showtime> showtimes) { this.showtimes = showtimes; }
+    /* ---------- GETTERS / SETTERS ---------- */
+    public String getTitle()              { return title; }
+    public void   setTitle(String title)  { this.title = title; }
+
+    public String getDescription()        { return description; }
+    public void   setDescription(String d){ this.description = d; }
+
+    public Duration getDuration()         { return duration; }
+    public void     setDuration(Duration d){ this.duration = d; }
+
+
+    public String getPosterURL()          { return posterURL; }
+    public void   setPosterURL(String url){ this.posterURL = url; }
+
+    public Status getStatus()             { return status; }
+    public void   setStatus(Status s)     { this.status = s; }
+
+    public Set<Showtime> getShowtimes()             { return showtimes; }
+    public void          setShowtimes(Set<Showtime> s){ this.showtimes = s; }
 }

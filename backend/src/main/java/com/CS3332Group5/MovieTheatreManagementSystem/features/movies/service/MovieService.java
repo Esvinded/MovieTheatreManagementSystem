@@ -9,42 +9,80 @@ import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 
 @Service
 public class MovieService {
-    private final MovieRepository movieRepo;
+
+    private final MovieRepository  movieRepo;
     private final ShowtimeRepository showtimeRepo;
 
-    public MovieService(MovieRepository movieRepo, ShowtimeRepository showtimeRepo) {
-        this.movieRepo = movieRepo;
+    public MovieService(MovieRepository movieRepo,
+                        ShowtimeRepository showtimeRepo) {
+        this.movieRepo   = movieRepo;
         this.showtimeRepo = showtimeRepo;
     }
 
-    public List<MovieDto> listAll(){ return movieRepo.findAll().stream().map(this::map).toList();}
+    /* ---------- READ ---------- */
+    public List<MovieDto> listAll() {
+
+        return movieRepo.findAll().stream().map(this::map).toList();
+    }
+//    public List<MovieDto> listByTheater(Long theaterId) {
+//        return movieRepo.findDistinctByShowtimes_Screen_Theater_Id(theaterId)
+//                .stream()
+//                .map(this::map)
+//                .toList();
+//    }
+
+    /* ---------- CREATE ---------- */
     @Transactional
-    public MovieDto create(MovieCreateRequest r){
-        if (movieRepo.existsByTitleIgnoreCase(r.getTitle()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Title is duplicated");
-
-        // dùng khởi tạo thủ công vì builder
+    public MovieDto create(MovieCreateRequest r) {
         Movie m = new Movie();
-        m.setTitle(r.getTitle());
-        m.setDuration(r.getDuration());
-        m.setStatus(Status.ACTIVE);
-
+        m.setTitle      (r.getTitle());
+        m.setDuration   (r.getDuration());
+        m.setPosterURL  (r.getPosterURL());
+        m.setStatus     (Status.ACTIVE);
+        m.setDescription(r.getDesciption());
         return map(movieRepo.save(m));
     }
+
+    /* ---------- UPDATE ---------- */
     @Transactional
-    public MovieDto update(Long id, MovieUpdateRequest r){
-        Movie m=movieRepo.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Not found"));
-        m.setTitle(r.title()); m.setDuration(r.duration()); m.setStatus(r.status());
+    public MovieDto update(Long id, MovieUpdateRequest r) {
+        Movie m = movieRepo.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found"));
+        if (r.title()      != null) m.setTitle     (r.title());
+        if (r.duration()   != null) m.setDuration  (r.duration());
+        if (r.PosterURL()  != null) m.setPosterURL (r.PosterURL());
+        if (r.status()     != null) m.setStatus    (r.status());
+        if (r.description() != null) m.setDescription(r.description());
         return map(m);
     }
+
+    /* ---------- DELETE ---------- */
     @Transactional
-    public void delete(Long id){
-        if(showtimeRepo.existsByMovie_Id(id)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Has showtimes");
+    public void delete(Long id) {
+        // Prevent deletion if there are upcoming showtimes for this movie
+        if (showtimeRepo.existsByMovieId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot delete movie: there are upcoming showtimes"
+            );
+        }
         movieRepo.deleteById(id);
     }
-    private MovieDto map(Movie m){return new MovieDto(m.getId(),m.getTitle(),m.getDuration(),m.getStatus());}
+
+    /* ---------- MAPPER ---------- */
+    private MovieDto map(Movie m) {
+        return new MovieDto(
+                m.getId(),
+                m.getTitle(),
+                m.getDuration(),
+                m.getStatus(),
+                m.getPosterURL(),
+                m.getDescription()
+        );
+    }
 }
