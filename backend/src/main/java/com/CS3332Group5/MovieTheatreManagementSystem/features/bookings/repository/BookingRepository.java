@@ -19,7 +19,7 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Tìm booking PENDING quá 5 phút → timeout
-    List<Booking> findByStatusAndCreatedAtBefore(BookingStatus status, Instant cutoff);
+    List<Booking> findByStatusAndBookingDateBefore(BookingStatus status, Instant cutoff);
 
     // Scheduler post-showtime: booking còn AWAITING_PAYMENT sau showtime kết thúc
     List<Booking> findByShowtimeIdInAndStatus(List<Long> showtimeIds, BookingStatus status);
@@ -44,5 +44,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Booking findBookingById(Long id);
 
-    List<Booking> findByCustomerOrderByCreatedAtDesc(Customer customer);
+    List<Booking> findByCustomerOrderByBookingDateDesc(Customer customer);
 }

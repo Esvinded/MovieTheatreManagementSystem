@@ -209,7 +209,7 @@ public class BookingService {
     @Transactional
     public void releaseExpired() {
         Instant cutoff = Instant.now().minus(HOLD_DURATION);
-        List<Booking> olds = bookingRepository.findByStatusAndCreatedAtBefore(BookingStatus.PENDING, cutoff);
+        List<Booking> olds = bookingRepository.findByStatusAndBookingDateBefore(BookingStatus.PENDING, cutoff);
         olds.forEach(b -> {
             b.setStatus(BookingStatus.EXPIRED);
             b.getSeats().forEach(s -> s.setStatus(SeatStatus.RELEASED));
@@ -242,7 +242,7 @@ public class BookingService {
     public List<Booking> getUserBookings(Long userId) {
         Customer customer = customerRepository.findById(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
-        return bookingRepository.findByCustomerOrderByCreatedAtDesc(customer);
+        return bookingRepository.findByCustomerOrderByBookingDateDesc(customer);
     }
 
     /**
