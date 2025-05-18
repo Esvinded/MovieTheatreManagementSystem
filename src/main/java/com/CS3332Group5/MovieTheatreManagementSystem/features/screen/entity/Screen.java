@@ -11,7 +11,6 @@ import java.util.List;
 @Entity
 @Table(name = "screens")
 public class Screen extends BaseEntity {
-    private Long id;
 
     private String name;
     private Integer capacity;
@@ -27,7 +26,6 @@ public class Screen extends BaseEntity {
     private List<Seat> seats;
 
     // --- Getters ---
-    public Long getId() { return id; }
     public String getName() { return name; }
     public Integer getCapacity() { return capacity; }
     public Status getStatus() { return status; }
