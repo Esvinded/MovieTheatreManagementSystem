@@ -32,9 +32,7 @@ public class Movie extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;
 
-    @OneToMany(mappedBy = "movie",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+
     private Set<Showtime> showtimes = new HashSet<>();
 
     /* ---------- GETTERS / SETTERS ---------- */
