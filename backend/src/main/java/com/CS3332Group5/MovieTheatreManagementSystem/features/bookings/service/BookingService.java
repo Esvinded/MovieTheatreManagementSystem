@@ -13,6 +13,8 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.S
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Customer;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,9 @@ public class BookingService {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private MovieRepository movieRepository;
+
     private static final Duration HOLD_DURATION = Duration.ofMinutes(5);
 
     /**
@@ -74,7 +79,10 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setBookingDate(Instant.now());
         // Snapshot movie title và start time
-        booking.setMovieTitleSnapshot(showtime.getMovie().getTitle());
+        String movieTitle = movieRepository.findById(showtime.getMovieId())
+            .map(Movie::getTitle)
+            .orElse("Unknown");
+        booking.setMovieTitleSnapshot(movieTitle);
         booking.setStartTimeSnapshot(showtime.getStartTime());
         booking = bookingRepository.save(booking);
 
