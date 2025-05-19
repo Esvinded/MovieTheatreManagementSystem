@@ -1,5 +1,8 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.controller;
 
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.BookingDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.BookingSeatDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.BookingMapper;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.CreateBookingRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.SeatBatchActionRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.Booking;
@@ -19,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -38,71 +41,86 @@ public class BookingController {
 
     // 1. Start booking
     @PostMapping
-    public ResponseEntity<Booking> create(
+    public ResponseEntity<BookingDto> create(
         @Valid @RequestBody CreateBookingRequest req,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+        java.security.Principal principal
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        return ResponseEntity.ok(bookingService.startBooking(req, userId));
+        Long userId = customerRepository.findByUsername(principal.getName())
+    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại")).getId();
+        Booking booking = bookingService.startBooking(req, userId);
+        return ResponseEntity.ok(BookingMapper.toDto(booking));
     }
 
     // 2. Select/Deselect seat (dùng seatId thay vì seatCode)
     @PatchMapping("/{id}/seat/{seatId}")
-    public ResponseEntity<Booking> toggleSeat(
+    public ResponseEntity<BookingDto> toggleSeat(
         @PathVariable Long id,
         @PathVariable Long seatId,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+        java.security.Principal principal
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
         Booking booking = bookingService.findById(id);
         if (!booking.getCustomer().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
-        return ResponseEntity.ok(bookingService.toggleSeat(id, seatId));
+        Booking updated = bookingService.toggleSeat(id, seatId);
+        return ResponseEntity.ok(BookingMapper.toDto(updated));
     }
 
     // 2. Select/Deselect multiple seats (batch)
     @PatchMapping("/{id}/seats")
-    public ResponseEntity<Booking> toggleSeats(
+    public ResponseEntity<BookingDto> toggleSeats(
         @PathVariable Long id,
         @RequestBody SeatBatchActionRequest req,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+        java.security.Principal principal
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
         Booking booking = bookingService.findById(id);
         if (!booking.getCustomer().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
-        return ResponseEntity.ok(bookingService.toggleSeats(id, req.getSeatIds()));
+        Booking updated = bookingService.toggleSeats(id, req.getSeatIds());
+        return ResponseEntity.ok(BookingMapper.toDto(updated));
     }
 
     // 3. Confirm booking
     @PostMapping("/{id}/confirm")
-    public ResponseEntity<Booking> confirm(
+    public ResponseEntity<BookingDto> confirm(
         @PathVariable Long id,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+        java.security.Principal principal
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
         Booking booking = bookingService.findById(id);
         if (!booking.getCustomer().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
-        return ResponseEntity.ok(bookingService.confirm(id));
+        Booking updated = bookingService.confirm(id);
+        return ResponseEntity.ok(BookingMapper.toDto(updated));
     }
 
     // 4. Fetch seat statuses for a showtime
     @GetMapping("/showtime/{showtimeId}/seats")
-    public ResponseEntity<List<BookingSeat>> getSeatStatuses(@PathVariable Long showtimeId) {
-        return ResponseEntity.ok(bookingService.getSeatStatuses(showtimeId));
+    public ResponseEntity<List<BookingSeatDto>> getSeatStatuses(@PathVariable Long showtimeId) {
+        List<BookingSeat> seats = bookingService.getSeatStatuses(showtimeId);
+        List<BookingSeatDto> dtos = seats.stream().map(BookingMapper::toSeatDto).toList();
+        return ResponseEntity.ok(dtos);
     }
 
     // 5. Cancel booking
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(
         @PathVariable Long id,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails
+        java.security.Principal principal
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
         Booking booking = bookingService.findById(id);
         if (!booking.getCustomer().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
@@ -113,28 +131,30 @@ public class BookingController {
 
     // 6. Get user's booking history
     @GetMapping("/my-bookings")
-    public ResponseEntity<List<Booking>> getMyBookings(@org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        Customer customer = customerRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
-        return ResponseEntity.ok(bookingService.getUserBookings(customer.getId()));
+    public ResponseEntity<List<BookingDto>> getMyBookings(java.security.Principal principal) {
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
+        List<Booking> bookings = bookingService.getUserBookings(userId);
+        return ResponseEntity.ok(BookingMapper.toDtoList(bookings));
     }
 
     // 7. Create payment URL
     @PostMapping("/{id}/pay")
     public ResponseEntity<String> createPayment(
         @PathVariable Long id,
-        @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails,
+        java.security.Principal principal,
         HttpServletRequest request
     ) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
         Booking booking = bookingService.findById(id);
         if (!booking.getCustomer().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
         Long amount = bookingService.calculateTotalAmount(booking);
         String orderInfo = "Thanh toán vé xem phim - BookingID: " + id;
-        // Gọi method với request để lấy IP và build returnUrl
         String paymentUrl = vnPayService.createPaymentUrl(id, amount, orderInfo, request);
         return ResponseEntity.ok(paymentUrl);
     }

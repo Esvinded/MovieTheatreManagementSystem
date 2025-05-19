@@ -2,11 +2,13 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.Instant;
 
 @Entity
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "booking_seats")
 public class BookingSeat {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

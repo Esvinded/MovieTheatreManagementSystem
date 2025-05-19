@@ -1,6 +1,7 @@
 // src/main/java/com/CS3332Group5/MovieTheatreManagementSystem/features/bookings/entity/Booking.java
 package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Customer;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "bookings")
 public class Booking {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
