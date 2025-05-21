@@ -26,10 +26,23 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**"
                 ).permitAll()
-                // Profile endpoints: require login
+                // Allow public access to homepage
                 .requestMatchers(
-                    "/api/customer/**"
-                ).authenticated()
+                    "/api/public/**"
+                ).permitAll()
+                // Customer only endpoints
+                .requestMatchers(
+                    "/api/customer/**",
+                    "/api/booking/**"
+                ).hasRole("CUSTOMER")
+                // Staff only endpoints
+                .requestMatchers(
+                    "/api/theatres/**",
+                    "/api/screens/**",
+                    "/api/seats/**",
+                    "/api/movie/**",
+                    "/api/showtimes/**"
+                ).hasRole("STAFF")  
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // Secure all other endpoints
