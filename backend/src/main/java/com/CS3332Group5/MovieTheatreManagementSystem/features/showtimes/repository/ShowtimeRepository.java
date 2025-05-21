@@ -19,21 +19,21 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
 
     boolean existsByMovieId(Long movieId);
 
-    @Query("SELECT DISTINCT DATE(sh.startTime) FROM Showtime sh " +
-        "WHERE sh.movie.id = :movieId AND sh.screen.theatre.id = :theatreId")
-    List<LocalDate> findDistinctDatesByMovieAndTheatre(
-        @Param("movieId") Long movieId,
-        @Param("theatreId") Long theatreId
-    );
+    @Query(value = """
+        SELECT DISTINCT DATE(sh.start_time) 
+        FROM showtimes sh
+        JOIN screens s ON sh.screen_id = s.id
+        WHERE sh.movie_id = :movieId AND s.theatre_id = :theatreId
+    """, nativeQuery = true)
+    List<LocalDate> findDistinctDatesByMovieAndTheatre(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId);
 
-    @Query("SELECT sh FROM Showtime sh " +
-        "WHERE sh.movie.id = :movieId " +
-        "AND sh.screen.theatre.id = :theatreId " +
-        "AND DATE(sh.startTime) = :date")
-    List<Showtime> findByMovieIdAndTheatreIdAndDate(
-        @Param("movieId") Long movieId,
-        @Param("theatreId") Long theatreId,
-        @Param("date") LocalDate date
-    );
+    @Query(value = """
+        SELECT * FROM showtimes sh
+        JOIN screens s ON sh.screen_id = s.id
+        WHERE sh.movie_id = :movieId
+        AND s.theatre_id = :theatreId
+        AND DATE(sh.start_time) = :date
+    """, nativeQuery = true)
+    List<Showtime> findByMovieIdAndTheatreIdAndDate(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId, @Param("date") LocalDate date);
 
 }
