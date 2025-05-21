@@ -36,7 +36,10 @@ public class PublicAccessService {
     }
 
     public List<LocalDate> getAvailableDates(Long movieId, Long theatreId) {
-        return showtimeRepository.findDistinctDatesByMovieAndTheatre(movieId, theatreId);
+        List<java.sql.Date> sqlDates = showtimeRepository.findDistinctDatesByMovieAndTheatre(movieId, theatreId);
+        return sqlDates.stream()
+                .map(java.sql.Date::toLocalDate)
+                .toList();
     }
 
     public List<Showtime> getShowtimes(Long movieId, Long theatreId, LocalDate date) {

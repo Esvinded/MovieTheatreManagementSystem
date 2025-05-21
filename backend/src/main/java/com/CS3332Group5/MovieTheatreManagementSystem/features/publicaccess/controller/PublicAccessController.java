@@ -6,6 +6,7 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.S
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -19,34 +20,32 @@ public class PublicAccessController {
     private PublicAccessService publicAccessService;
 
     @GetMapping("/movies")
-    public List<Movie> getAllMovies() {
-        return publicAccessService.getAllMovies();
+    public ResponseEntity<List<Movie>> getAllMovies() {
+        return ResponseEntity.ok(publicAccessService.getAllMovies());
     }
 
     @GetMapping("/theatres/all")
-    public List<Theatre> getAllTheatres() {
-        return publicAccessService.getAllTheatres();
+    public ResponseEntity<List<Theatre>> getAllTheatres() {
+        return ResponseEntity.ok(publicAccessService.getAllTheatres());
     }
 
-    @GetMapping("/theatres/{movieId}")
-    public List<Theatre> getTheatresForMovie(@RequestParam Long movieId) {
-        return publicAccessService.getTheatresForMovie(movieId);
+    @GetMapping("/theatres")
+    public ResponseEntity<List<Theatre>> getTheatresForMovie(@RequestParam Long movieId) {
+        return ResponseEntity.ok(publicAccessService.getTheatresForMovie(movieId));
     }
 
     @GetMapping("/available-dates")
-    public List<LocalDate> getAvailableDates(
-        @RequestParam Long movieId,
-        @RequestParam Long theatreId
-    ) {
-        return publicAccessService.getAvailableDates(movieId, theatreId);
+    public ResponseEntity<List<LocalDate>> getAvailableDates(
+            @RequestParam Long movieId,
+            @RequestParam Long theatreId) {
+        return ResponseEntity.ok(publicAccessService.getAvailableDates(movieId, theatreId));
     }
 
     @GetMapping("/showtimes")
-    public List<Showtime> getShowtimes(
-        @RequestParam Long movieId,
-        @RequestParam Long theatreId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
-    ) {
-        return publicAccessService.getShowtimes(movieId, theatreId, date);
+    public ResponseEntity<List<Showtime>> getShowtimes(
+            @RequestParam Long movieId,
+            @RequestParam Long theatreId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(publicAccessService.getShowtimes(movieId, theatreId, date));
     }
-} 
+}

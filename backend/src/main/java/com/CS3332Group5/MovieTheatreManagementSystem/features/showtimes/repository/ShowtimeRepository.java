@@ -20,12 +20,12 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     boolean existsByMovieId(Long movieId);
 
     @Query(value = """
-        SELECT DISTINCT DATE(sh.start_time) 
+        SELECT DISTINCT DATE(sh.start_time)
         FROM showtimes sh
         JOIN screens s ON sh.screen_id = s.id
         WHERE sh.movie_id = :movieId AND s.theatre_id = :theatreId
     """, nativeQuery = true)
-    List<LocalDate> findDistinctDatesByMovieAndTheatre(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId);
+    List<java.sql.Date> findDistinctDatesByMovieAndTheatre(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId);
 
     @Query(value = """
         SELECT * FROM showtimes sh
