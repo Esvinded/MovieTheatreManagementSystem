@@ -28,10 +28,7 @@ public class Seat extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "screen_id", nullable = false)
-<<<<<<< HEAD
-=======
     @com.fasterxml.jackson.annotation.JsonBackReference
->>>>>>> f403ff2bc01bceee4c504fb3c390a7cc32da15e4
     private Screen screen;
 
     // ==== Getters & Setters ====
