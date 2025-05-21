@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "screens")
 public class Screen extends BaseEntity {
 
@@ -23,6 +24,7 @@ public class Screen extends BaseEntity {
     private Theatre theatre;
 
     @OneToMany(mappedBy = "screen", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<Seat> seats;
 
     // --- Getters ---

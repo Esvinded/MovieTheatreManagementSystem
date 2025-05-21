@@ -2,8 +2,10 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity;
 
 import java.time.LocalDate;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer extends User {
     @Column(nullable = true)
     private String fullName;

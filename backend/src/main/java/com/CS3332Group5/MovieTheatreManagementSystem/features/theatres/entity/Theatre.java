@@ -2,8 +2,10 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity;
 
 import  com.CS3332Group5.MovieTheatreManagementSystem.common.enums.*;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "theatres")
 public class Theatre {
 

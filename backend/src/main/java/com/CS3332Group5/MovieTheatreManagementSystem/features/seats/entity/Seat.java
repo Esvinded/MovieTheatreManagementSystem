@@ -3,9 +3,11 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.BaseEntity;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
 import com.CS3332Group5.MovieTheatreManagementSystem.common.enums.Status;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "seats")
 public class Seat extends BaseEntity {
 
@@ -26,6 +28,10 @@ public class Seat extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "screen_id", nullable = false)
+<<<<<<< HEAD
+=======
+    @com.fasterxml.jackson.annotation.JsonBackReference
+>>>>>>> f403ff2bc01bceee4c504fb3c390a7cc32da15e4
     private Screen screen;
 
     // ==== Getters & Setters ====

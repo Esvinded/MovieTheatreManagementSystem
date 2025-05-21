@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**"
                 ).permitAll()
+<<<<<<< HEAD
                 // Allow public access to homepage
                 .requestMatchers(
                     "/api/public/**"
@@ -43,6 +44,12 @@ public class SecurityConfig {
                     "/api/movie/**",
                     "/api/showtimes/**"
                 ).hasRole("STAFF")  
+=======
+                // Profile endpoints: require login
+                .requestMatchers(
+                    "/api/customer/**"
+                ).authenticated()
+>>>>>>> f403ff2bc01bceee4c504fb3c390a7cc32da15e4
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // Secure all other endpoints
