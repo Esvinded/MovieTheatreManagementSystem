@@ -43,7 +43,7 @@ public class PublicAccessService {
     }
 
     public List<Showtime> getShowtimes(Long movieId, Long theatreId, LocalDate date) {
-        return showtimeRepository.findByMovieIdAndTheatreIdAndDate(movieId, theatreId, date);
+        return showtimeRepository.findShowtimesByMovieAndTheatreAndDate(movieId, theatreId, date);
     }
 
 }

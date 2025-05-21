@@ -48,4 +48,5 @@ public class PublicAccessController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(publicAccessService.getShowtimes(movieId, theatreId, date));
     }
+
 }

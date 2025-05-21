@@ -28,12 +28,13 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     List<java.sql.Date> findDistinctDatesByMovieAndTheatre(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId);
 
     @Query(value = """
-        SELECT * FROM showtimes sh
+        SELECT sh.*
+        FROM showtimes sh
         JOIN screens s ON sh.screen_id = s.id
         WHERE sh.movie_id = :movieId
         AND s.theatre_id = :theatreId
         AND DATE(sh.start_time) = :date
     """, nativeQuery = true)
-    List<Showtime> findByMovieIdAndTheatreIdAndDate(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId, @Param("date") LocalDate date);
+    List<Showtime> findShowtimesByMovieAndTheatreAndDate(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId, @Param("date") LocalDate date);
 
 }
