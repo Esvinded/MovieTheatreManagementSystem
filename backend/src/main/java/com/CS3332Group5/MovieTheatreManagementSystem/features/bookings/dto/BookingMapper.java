@@ -4,7 +4,6 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.Bo
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingSeat;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.entity.Seat;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BookingMapper {
     private BookingMapper() {}
@@ -14,10 +13,22 @@ public class BookingMapper {
         dto.setId(booking.getId());
         dto.setBookingDate(booking.getBookingDate() != null ? booking.getBookingDate().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime() : null);
         dto.setStatus(booking.getStatus().name());
-        dto.setSeats(booking.getSeats().stream().map(BookingMapper::toSeatDto).collect(Collectors.toList()));
+        dto.setSeats(booking.getSeats().stream().map(BookingMapper::toSeatDto).toList());
         dto.setMovieTitle(booking.getMovieTitleSnapshot());
-        dto.setScreenName(null);
-        dto.setTheatreName(null);
+        // --- Populate screenName and theatreName ---
+        String screenName = null;
+        String theatreName = null;
+        if (booking.getShowtime() != null && !booking.getSeats().isEmpty()) {
+            BookingSeat firstSeat = booking.getSeats().get(0);
+            if (firstSeat.getSeat() != null && firstSeat.getSeat().getScreen() != null) {
+                screenName = firstSeat.getSeat().getScreen().getName();
+                if (firstSeat.getSeat().getScreen().getTheatre() != null) {
+                    theatreName = firstSeat.getSeat().getScreen().getTheatre().getName();
+                }
+            }
+        }
+        dto.setScreenName(screenName);
+        dto.setTheatreName(theatreName);
         return dto;
     }
 
@@ -32,6 +43,6 @@ public class BookingMapper {
     }
 
     public static List<BookingDto> toDtoList(List<Booking> bookings) {
-        return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
+        return bookings.stream().map(BookingMapper::toDto).toList();
     }
 }

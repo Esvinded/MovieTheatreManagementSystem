@@ -48,7 +48,7 @@ public class BookingController {
         Long userId = customerRepository.findByUsername(principal.getName())
     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại")).getId();
         Booking booking = bookingService.startBooking(req, userId);
-        return ResponseEntity.ok(BookingMapper.toDto(booking));
+        return ResponseEntity.ok(bookingService.toDtoWithNames(booking));
     }
 
     // 2. Select/Deselect seat (dùng seatId thay vì seatCode)
@@ -66,7 +66,7 @@ public class BookingController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
         Booking updated = bookingService.toggleSeat(id, seatId);
-        return ResponseEntity.ok(BookingMapper.toDto(updated));
+        return ResponseEntity.ok(bookingService.toDtoWithNames(updated));
     }
 
     // 2. Select/Deselect multiple seats (batch)
@@ -84,7 +84,7 @@ public class BookingController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
         Booking updated = bookingService.toggleSeats(id, req.getSeatIds());
-        return ResponseEntity.ok(BookingMapper.toDto(updated));
+        return ResponseEntity.ok(bookingService.toDtoWithNames(updated));
     }
 
     // 3. Confirm booking
@@ -101,7 +101,7 @@ public class BookingController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền thao tác booking này");
         }
         Booking updated = bookingService.confirm(id);
-        return ResponseEntity.ok(BookingMapper.toDto(updated));
+        return ResponseEntity.ok(bookingService.toDtoWithNames(updated));
     }
 
     // 4. Fetch seat statuses for a showtime
@@ -136,7 +136,7 @@ public class BookingController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
             .getId();
         List<Booking> bookings = bookingService.getUserBookings(userId);
-        return ResponseEntity.ok(BookingMapper.toDtoList(bookings));
+        return ResponseEntity.ok(bookingService.toDtoListWithNames(bookings));
     }
 
     // 7. Create payment URL

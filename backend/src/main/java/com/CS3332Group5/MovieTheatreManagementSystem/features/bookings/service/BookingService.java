@@ -1,5 +1,6 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.service;
 
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.BookingDto;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.CreateBookingRequest;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.Booking;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingSeat;
@@ -15,6 +16,11 @@ import com.CS3332Group5.MovieTheatreManagementSystem.features.user.entity.Custom
 import com.CS3332Group5.MovieTheatreManagementSystem.features.user.repository.CustomerRepository;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.repository.MovieRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.entity.Theatre;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.repository.TheatreRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.dto.BookingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -48,6 +54,11 @@ public class BookingService {
 
     @Autowired
     private MovieRepository movieRepository;
+
+    @Autowired
+    private ScreenRepository screenRepository;
+    @Autowired
+    private TheatreRepository theatreRepository;
 
     private static final Duration HOLD_DURATION = Duration.ofMinutes(5);
 
@@ -310,5 +321,14 @@ public class BookingService {
             }
             notificationService.notifySeatStatusChanged(showtimeId, booking.getSeats());
         }
+    }
+
+    public BookingDto toDtoWithNames(Booking booking) {
+        // Use BookingMapper.toDto directly, as it already contains the logic
+        return BookingMapper.toDto(booking);
+    }
+
+    public List<BookingDto> toDtoListWithNames(List<Booking> bookings) {
+        return bookings.stream().map(BookingMapper::toDto).toList();
     }
 }
