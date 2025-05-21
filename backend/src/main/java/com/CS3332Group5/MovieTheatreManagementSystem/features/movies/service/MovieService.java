@@ -26,8 +26,15 @@ public class MovieService {
 
     /* ---------- READ ---------- */
     public List<MovieDto> listAll() {
+
         return movieRepo.findAll().stream().map(this::map).toList();
     }
+//    public List<MovieDto> listByTheater(Long theaterId) {
+//        return movieRepo.findDistinctByShowtimes_Screen_Theater_Id(theaterId)
+//                .stream()
+//                .map(this::map)
+//                .toList();
+//    }
 
     /* ---------- CREATE ---------- */
     @Transactional
@@ -37,6 +44,7 @@ public class MovieService {
         m.setDuration   (r.getDuration());
         m.setPosterURL  (r.getPosterURL());
         m.setStatus     (Status.ACTIVE);
+        m.setDescription(r.getDesciption());
         return map(movieRepo.save(m));
     }
 
@@ -49,14 +57,20 @@ public class MovieService {
         if (r.duration()   != null) m.setDuration  (r.duration());
         if (r.PosterURL()  != null) m.setPosterURL (r.PosterURL());
         if (r.status()     != null) m.setStatus    (r.status());
+        if (r.description() != null) m.setDescription(r.description());
         return map(m);
     }
 
     /* ---------- DELETE ---------- */
     @Transactional
     public void delete(Long id) {
-        if (showtimeRepo.existsByMovie_Id(id))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Movie has showtimes");
+        // Prevent deletion if there are upcoming showtimes for this movie
+        if (showtimeRepo.existsByMovieId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot delete movie: there are upcoming showtimes"
+            );
+        }
         movieRepo.deleteById(id);
     }
 
@@ -67,7 +81,8 @@ public class MovieService {
                 m.getTitle(),
                 m.getDuration(),
                 m.getStatus(),
-                m.getPosterURL()
+                m.getPosterURL(),
+                m.getDescription()
         );
     }
 }

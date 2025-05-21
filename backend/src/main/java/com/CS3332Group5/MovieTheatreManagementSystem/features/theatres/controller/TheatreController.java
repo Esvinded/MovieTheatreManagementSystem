@@ -1,28 +1,42 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.controller;
 
-
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.TheatreCreateRequest;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.TheatreDto;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.theatres.service.TheatreService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/theatres")
 public class TheatreController {
-    private final TheatreService theatreService;
 
-    public TheatreController(TheatreService theatreService) {
-        this.theatreService = theatreService;
+    private final TheatreService service;
+
+    public TheatreController(TheatreService service) {
+        this.service = service;
     }
 
-    @GetMapping ("/get")
+    /** Create mới + mặc định status = ACTIVE */
+    @PostMapping("/set")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TheatreDto create(@Valid @RequestBody TheatreCreateRequest req) {
+        return service.create(req);
+    }
+
+    /** Lấy toàn bộ theatres */
+    @GetMapping("/get")
     public List<TheatreDto> listAll() {
-        return theatreService.listAll();
+        return service.listAll();
     }
 
-    @PostMapping ("/set")
-    public TheatreDto create(@RequestBody TheatreCreateRequest dto) {
-        return theatreService.create(dto);
+    /** Update theo id */
+    @PutMapping("/update/{id}")
+    public TheatreDto update(
+            @PathVariable Long id,
+            @Valid @RequestBody TheatreUpdateRequest req
+    ) {
+        return service.update(id, req);
     }
 }

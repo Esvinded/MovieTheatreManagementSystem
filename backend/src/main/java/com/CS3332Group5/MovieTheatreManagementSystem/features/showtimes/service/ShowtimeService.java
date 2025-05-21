@@ -3,80 +3,63 @@ package com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.service
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.entity.Showtime;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.showtimes.repository.ShowtimeRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.entity.Movie;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.movies.repository.MovieRepository;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.entity.Screen;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.repository.ScreenRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ShowtimeService {
 
-    private final ShowtimeRepository showtimeRepo;
-    private final MovieRepository    movieRepo;
-    private final ScreenRepository   screenRepo;
+    private final ShowtimeRepository repo;
 
-    public ShowtimeService(ShowtimeRepository showtimeRepo,
-                           MovieRepository movieRepo,
-                           ScreenRepository screenRepo) {
-        this.showtimeRepo = showtimeRepo;
-        this.movieRepo    = movieRepo;
-        this.screenRepo   = screenRepo;
+    public ShowtimeService(ShowtimeRepository repo) {
+        this.repo = repo;
     }
 
-    /* ---------- Query ---------- */
-    public List<ShowtimeDto> listAll() {
-        return showtimeRepo.findAll().stream().map(this::map).toList();
+    /* ---------- CREATE ---------- */
+    public ShowtimeDto createShowtime(ShowtimeCreateRequest req) {
+        Showtime e = new Showtime();
+        e.setMovieId(req.movieId());
+        e.setScreenId(req.screenId());
+        e.setStartTime(req.startTime());
+        e.setEndTime(req.endTime());
+
+        e = repo.save(e);
+        return toDto(e);
     }
 
-    /* ---------- Mutation ---------- */
-    @Transactional
-    public ShowtimeDto create(ShowtimeCreateRequest dto) {
-        Movie  movie  = movieRepo.findById(dto.movieId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Movie not found"));
-        Screen screen = screenRepo.findById(dto.screenId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Screen not found"));
-
-        Showtime s = new Showtime();
-        s.setStartTime(dto.startTime());
-        s.setEndTime(dto.endTime());
-        s.setMovie(movie);
-        s.setScreen(screen);
-
-        return map(showtimeRepo.save(s));
+    /* ---------- UPDATE ---------- */
+    public Optional<ShowtimeDto> updateShowtime(Long id, ShowtimeUpdateRequest req) {
+        return repo.findById(id)
+                .map(e -> {
+                    if (req.startTime() != null) e.setStartTime(req.startTime());
+                    if (req.endTime()   != null) e.setEndTime(req.endTime());
+                    return repo.save(e);
+                })
+                .map(this::toDto);
     }
 
-    @Transactional
-    public ShowtimeDto update(Long id, ShowtimeUpdateRequest dto) {
-        Showtime s = showtimeRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Showtime not found"));
-
-        s.setStartTime(dto.startTime());
-        s.setEndTime(dto.endTime());
-        return map(s);
+    /* ---------- LIST helpers ---------- */
+    public List<ShowtimeDto> listByMovie(Long movieId) {
+        return repo.findByMovieIdAndStartTimeAfter(movieId, OffsetDateTime.now())
+                .stream().map(this::toDto).toList();
     }
 
-    @Transactional
-    public void delete(Long id) {
-        showtimeRepo.deleteById(id);
+    public List<ShowtimeDto> listByScreen(Long screenId) {
+        return repo.findByScreenIdAndStartTimeAfter(screenId, OffsetDateTime.now())
+                .stream().map(this::toDto).toList();
     }
 
-    /* ---------- Mapper ---------- */
-    private ShowtimeDto map(Showtime s) {
+    /* ---------- mapper ---------- */
+    private ShowtimeDto toDto(Showtime e) {
         return new ShowtimeDto(
-                s.getId(),
-                s.getStartTime(),
-                s.getEndTime(),
-                s.getMovie() != null  ? s.getMovie().getId()  : null,
-                s.getScreen()!= null ? s.getScreen().getId() : null
+                e.getId(),
+                e.getMovieId(),
+                e.getScreenId(),
+                e.getStartTime(),
+                e.getEndTime()
         );
     }
 }

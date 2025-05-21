@@ -1,16 +1,16 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.screen.controller;
 
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenCreateRequest;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenDto;
-import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.ScreenUpdateRequest;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.dto.*;
 import com.CS3332Group5.MovieTheatreManagementSystem.features.screen.service.ScreenService;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.seats.dto.SeatDto;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/screen")
+@RequestMapping("/api/screens")
 public class ScreenController {
 
     private final ScreenService service;
@@ -19,31 +19,32 @@ public class ScreenController {
         this.service = service;
     }
 
-    /* ---------- READ ---------- */
-    // GET /api/screen/get
+    @PostMapping("/set")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ScreenDto create(@Valid @RequestBody ScreenCreateRequest r) {
+        return service.create(r);
+    }
+
     @GetMapping("/get")
-    public List<ScreenDto> getAll() {
+    public List<ScreenDto> listAll() {
         return service.listAll();
     }
 
-    /* ---------- CREATE ---------- */
-    // POST /api/screen/set
-    @PostMapping("/set")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ScreenDto create(@RequestBody ScreenCreateRequest req) {
-        return service.create(req);
+    /** GET /api/screens/get/theatre/{theatreId} */
+    @GetMapping("/get/theatre/{theatreId}")
+    public List<ScreenDto> byTheatre(@PathVariable Long theatreId) {
+        return service.listByTheatre(theatreId);
     }
 
-    /* ---------- UPDATE ---------- */
-    // PUT /api/screen/update/{id}
+    /** GET /api/screens/{screenId}/seats  CHƯA LAM*/
+
+
     @PutMapping("/update/{id}")
     public ScreenDto update(@PathVariable Long id,
-                            @RequestBody ScreenUpdateRequest req) {
-        return service.update(id, req);
+                            @Valid @RequestBody ScreenUpdateRequest r) {
+        return service.update(id, r);
     }
 
-    /* ---------- DELETE ---------- */
-    // DELETE /api/screen/delete/{id}
     @DeleteMapping("/delete/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
