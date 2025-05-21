@@ -27,6 +27,10 @@ public class PublicAccessService {
         return movieRepository.findAll();
     }
 
+    public List<Theatre> getAllTheatres() {
+        return theatreRepository.findAll();
+    }
+
     public List<Theatre> getTheatresForMovie(Long movieId) {
         return theatreRepository.findTheatresWithShowtimesForMovie(movieId);
     }

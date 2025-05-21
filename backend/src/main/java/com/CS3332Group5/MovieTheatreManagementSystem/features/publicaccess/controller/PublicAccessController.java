@@ -23,7 +23,12 @@ public class PublicAccessController {
         return publicAccessService.getAllMovies();
     }
 
-    @GetMapping("/theatres")
+    @GetMapping("/theatres/all")
+    public List<Theatre> getAllTheatres() {
+        return publicAccessService.getAllTheatres();
+    }
+
+    @GetMapping("/theatres/{movieId}")
     public List<Theatre> getTheatresForMovie(@RequestParam Long movieId) {
         return publicAccessService.getTheatresForMovie(movieId);
     }
