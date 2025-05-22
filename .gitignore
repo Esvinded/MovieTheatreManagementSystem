@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Application files ###
+# Ignore application properties files
+/backend/src/main/resources/application.properties
