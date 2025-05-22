@@ -36,6 +36,7 @@ public class BookingMapper {
         BookingSeatDto dto = new BookingSeatDto();
         Seat s = seat.getSeat();
         dto.setId(seat.getId());
+        dto.setSeatId(s != null ? s.getId() : null); // Add actual seat id
         dto.setSeatNumber(s != null ? s.getSeatNumber() : null);
         dto.setSeatType(s != null ? s.getStatus().name() : null);
         dto.setAvailable(seat.getStatus().name().equals("RESERVED") || seat.getStatus().name().equals("BOOKED"));
