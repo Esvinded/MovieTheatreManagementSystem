@@ -1,0 +1,39 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HomePage from "./HomePage";
+import MovieBooking from "./Booking";
+import PricesSection from "./PricesSection";
+import CinemasSection from "./CinemasSection";
+import MoviesSection from "./MoviesSection";
+import Navbar from "./NavBar";
+import AuthStaf from "./AuthStaff";
+import AuthUser from "./AuthUser";
+import AccountPage from "./AccountPage";
+import { AuthProvider } from "./AuthContext"; // ✅ Import AuthProvider
+import ChangePassword from "./ChangePassword";
+import Footer from "./Footer";
+import BookingHistoryPage from "./BookingHistoryPage";
+
+function App() {
+  return (
+    <AuthProvider> {/* ✅ Bọc toàn bộ ứng dụng */}
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/home-page" element={<HomePage />} />
+          <Route path="/movies" element={<MoviesSection />} />
+          <Route path="/cinemas" element={<CinemasSection />} />
+          <Route path="/prices" element={<PricesSection />} />
+          <Route path="/booking" element={<MovieBooking />} />
+          <Route path="/auth-user" element={<AuthUser />} />
+          <Route path="/auth-staff" element={<AuthStaf />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/booking-history" element={<BookingHistoryPage />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
