@@ -7,9 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // Import pages
 import Dashboard from './pages/Dashboard';
 import MoviesManagement from './pages/MoviesManagement';
-// Đã loại bỏ import EditMovie vì không cần trang này nữa
 import ShowtimesManagement from './pages/ShowtimesManagement';
-// Đã loại bỏ import CreateShowtime vì đã tích hợp vào ShowtimesManagement
 import TheatresManagement from './pages/TheatresManagement';
 import ScreensManagement from './pages/ScreensManagement';
 import SeatsManagement from './pages/SeatsManagement';
@@ -19,15 +17,27 @@ import AuthStaffPage from './pages/AuthStaffPage';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 
-// Create a theme
+// 🎨 Theme tím 
 const theme = createTheme({
   palette: {
+    mode: 'light', 
     primary: {
-      main: '#1976d2',
+      main: '#1B1A55',       // tím navy
+      dark: '#070F2B',       // tím đậm nhất
+      light: '#535C91',      // tím trung tính
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#9290C3',        // tím pastel nhạt
+      contrastText: '#ffffff',
     },
+    background: {
+      default: '#f4f4f4',     // hoặc '#070F2B' nếu dùng dark mode
+      paper: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
   },
 });
 
@@ -38,7 +48,6 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            {/* Dashboard - protected */}
             <Route 
               path="/dashboard" 
               element={
@@ -47,8 +56,6 @@ function App() {
                 </PrivateRoute>
               } 
             />
-
-            {/* Movies Management - protected */}
             <Route 
               path="/admin/movies" 
               element={
@@ -57,9 +64,6 @@ function App() {
                 </PrivateRoute>
               } 
             />
-            {/* Đã loại bỏ route edit movie vì không cần trang này nữa */}
-
-            {/* Showtimes Management - protected */}
             <Route 
               path="/admin/showtimes" 
               element={
@@ -68,9 +72,6 @@ function App() {
                 </PrivateRoute>
               } 
             />
-            {/* Đã loại bỏ route /admin/showtimes/create vì đã tích hợp vào ShowtimesManagement */}
-
-            {/* Theatres Management - protected */}
             <Route 
               path="/admin/theatres" 
               element={
@@ -79,8 +80,6 @@ function App() {
                 </PrivateRoute>
               } 
             />
-
-            {/* Screens Management - protected */}
             <Route 
               path="/admin/screens" 
               element={
@@ -89,8 +88,6 @@ function App() {
                 </PrivateRoute>
               } 
             />
-
-            {/* Seats Management - protected */}
             <Route 
               path="/admin/seats" 
               element={
@@ -99,12 +96,8 @@ function App() {
                 </PrivateRoute>
               } 
             />
-
-            {/* Authentication - chỉ dùng AuthStaffPage */}
             <Route path="/login" element={<Navigate to="/staff/auth" replace />} />
             <Route path="/staff/auth" element={<AuthStaffPage />} />
-
-            {/* Redirect to dashboard by default */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

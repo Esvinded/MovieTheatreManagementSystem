@@ -347,19 +347,26 @@ const ShowtimesManagement = () => {
     
     // Kiểm tra tính hợp lệ của ngày tháng
     if (formData.showDate) {
-      // Trích xuất ngày, tháng, năm từ chuỗi yyyy-mm-dd
+     
       const [year, month, day] = formData.showDate.split('-').map(num => parseInt(num, 10));
-      
-      // Tạo đối tượng Date (lưu ý tháng trong JavaScript bắt đầu từ 0)
       const inputDate = new Date(year, month - 1, day);
       
-      // Kiểm tra xem ngày có hợp lệ hay không
+      // Kiểm tra ngày có hợp lệ không
       if (
         inputDate.getFullYear() !== year || 
         inputDate.getMonth() + 1 !== month || 
         inputDate.getDate() !== day
       ) {
         newErrors.showDate = "Ngày không hợp lệ (ví dụ: 31/04 không tồn tại)";
+      } else {
+        // Kiểm tra ngày có phải là quá khứ không
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        inputDate.setHours(0, 0, 0, 0);
+        
+        if (inputDate < today) {
+          newErrors.showDate = "Không thể tạo lịch chiếu cho ngày quá khứ";
+        }
       }
     }
 
@@ -413,9 +420,13 @@ const ShowtimesManagement = () => {
       );
       console.log("endDateTime:", endDateTime);
 
-      // Tạo chuỗi thời gian chính xác theo định dạng OffsetDateTime
-      // Format: yyyy-MM-ddTHH:mm:ss+00:00
-      const formatDateTimeForBackend = (dateObj) => {
+      // Tạo chuỗi thời gian chính xác theo định dạng ISO-8601 standard
+      // Sử dụng 3 định dạng khác nhau để thử nghiệm
+      const formatOption1 = (dateObj) => {
+        return dateObj.toISOString(); // Standard ISO format with Z: 2025-05-21T09:30:00.000Z
+      };
+      
+      const formatOption2 = (dateObj) => {
         const year = dateObj.getFullYear();
         const month = String(dateObj.getMonth() + 1).padStart(2, '0');
         const day = String(dateObj.getDate()).padStart(2, '0');
@@ -425,8 +436,34 @@ const ShowtimesManagement = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+00:00`;
       };
       
-      const startTimeISO = formatDateTimeForBackend(startDateTime);
-      const endTimeISO = formatDateTimeForBackend(endDateTime);
+      const formatOption3 = (dateObj) => {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:00Z`;
+      };
+      
+      // Sử dụng định dạng chuẩn ISO
+      const startTimeISO = formatOption1(startDateTime);
+      const endTimeISO = formatOption1(endDateTime);
+      
+      // Lưu các định dạng khác để thử nghiệm
+      const startTimeOption2 = formatOption2(startDateTime);
+      const endTimeOption2 = formatOption2(endDateTime);
+      const startTimeOption3 = formatOption3(startDateTime);
+      const endTimeOption3 = formatOption3(endDateTime);
+      
+      console.log("Định dạng 1 (ISO standard):");
+      console.log("startTimeISO:", startTimeISO);
+      console.log("endTimeISO:", endTimeISO);
+      console.log("Định dạng 2 (with +00:00):");
+      console.log("startTimeOption2:", startTimeOption2);
+      console.log("endTimeOption2:", endTimeOption2);
+      console.log("Định dạng 3 (simplified with Z):");
+      console.log("startTimeOption3:", startTimeOption3);
+      console.log("endTimeOption3:", endTimeOption3);
       
       console.log("startTimeISO:", startTimeISO);
       console.log("endTimeISO:", endTimeISO);
@@ -915,7 +952,7 @@ const ShowtimesManagement = () => {
                     >
                       {movies.map((movie) => (
                         <MenuItem key={movie.id} value={movie.id}>
-                          {movie.title} ({movie.duration})
+                          {movie.title}
                         </MenuItem>
                       ))}
                     </Select>
