@@ -136,7 +136,16 @@ public class BookingController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
             .getId();
         List<Booking> bookings = bookingService.getUserBookings(userId);
-        return ResponseEntity.ok(bookingService.toDtoListWithNames(bookings));
+        // Only return bookings that are BOOKED or not-yet-expired AWAITING_PAYMENT
+        List<BookingDto> filtered = bookingService.toDtoListWithNames(
+            bookings.stream().filter(b ->
+                b.getStatus() == BookingStatus.BOOKED ||
+                (b.getStatus() == BookingStatus.AWAITING_PAYMENT &&
+                 b.getBookingDate().isAfter(java.time.Instant.now().minus(BookingService.HOLD_DURATION))
+                )
+            ).toList()
+        );
+        return ResponseEntity.ok(filtered);
     }
 
     // 7. Create payment URL

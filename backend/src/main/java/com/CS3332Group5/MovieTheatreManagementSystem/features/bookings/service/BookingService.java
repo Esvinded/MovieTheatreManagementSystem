@@ -30,9 +30,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class BookingService {
+    private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -60,7 +63,11 @@ public class BookingService {
     @Autowired
     private TheatreRepository theatreRepository;
 
-    private static final Duration HOLD_DURATION = Duration.ofMinutes(5);
+    @Autowired
+    @org.springframework.context.annotation.Lazy
+    private BookingService bookingServiceProxy;
+
+    public static final Duration HOLD_DURATION = Duration.ofMinutes(5);
 
     /**
      * Tìm booking theo id
@@ -101,10 +108,11 @@ public class BookingService {
         for (Long seatId : req.getSeatIds()) {
             Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghế không tồn tại"));
-            // Kiểm double-booking
-            boolean exists = bookingSeatRepository.existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(
+            // Kiểm double-booking (chỉ tính booking còn hiệu lực)
+            boolean exists = bookingSeatRepository.existsActiveSeat(
                 showtimeId, seatId,
-                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED)
+                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
+                List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
             );
             if (exists) {
                 throw new ResponseStatusException(
@@ -140,10 +148,13 @@ public class BookingService {
             // Nếu chưa có thì thêm (select) với trạng thái RESERVED
             Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghế không tồn tại"));
-            if (bookingSeatRepository.existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(
+            // Check ghế đã bị giữ/đặt chưa
+            boolean isTaken = bookingSeatRepository.existsActiveSeat(
                 booking.getShowtime().getId(), seatId,
-                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED)
-            )) {
+                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
+                List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
+            );
+            if (isTaken) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã có người giữ/đặt");
             }
             BookingSeat bookingSeat = new BookingSeat();
@@ -177,8 +188,10 @@ public class BookingService {
                 Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghế không tồn tại"));
                 // Check ghế đã bị giữ/đặt chưa
-                boolean isTaken = bookingSeatRepository.existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(
-                    booking.getShowtime().getId(), seatId, List.of(SeatStatus.RESERVED, SeatStatus.BOOKED)
+                boolean isTaken = bookingSeatRepository.existsActiveSeat(
+                    booking.getShowtime().getId(), seatId,
+                    List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
+                    List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
                 );
                 if (isTaken) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã được giữ hoặc đặt");
@@ -229,14 +242,41 @@ public class BookingService {
     public void releaseExpired() {
         Instant cutoff = Instant.now().minus(HOLD_DURATION);
         List<Booking> olds = bookingRepository.findByStatusAndBookingDateBefore(BookingStatus.PENDING, cutoff);
-        olds.forEach(b -> {
+        logger.info("[releaseExpired] Found {} expired PENDING bookings", olds.size());
+        for (Booking b : olds) {
+            if (b.getStatus() != BookingStatus.PENDING) continue;
             b.setStatus(BookingStatus.EXPIRED);
-            b.getSeats().forEach(s -> s.setStatus(SeatStatus.RELEASED));
-            // Notify booking expired
+            for (BookingSeat seat : b.getSeats()) {
+                seat.setStatus(SeatStatus.RELEASED);
+                bookingSeatRepository.save(seat);
+            }
+            bookingRepository.save(b);
+            logger.info("[releaseExpired] Expired booking id={} (timeout)", b.getId());
             notificationService.notifyBookingExpired(b.getId());
-            // Notify seat status changed
             notificationService.notifySeatStatusChanged(b.getShowtime().getId(), b.getSeats());
-        });
+        }
+    }
+
+    /**
+     * Scheduler: release các booking AWAITING_PAYMENT quá HOLD_DURATION
+     */
+    @Transactional
+    public void releaseExpiredAwaitingPayment() {
+        Instant cutoff = Instant.now().minus(HOLD_DURATION);
+        List<Booking> olds = bookingRepository.findByStatusAndBookingDateBefore(BookingStatus.AWAITING_PAYMENT, cutoff);
+        logger.info("[releaseExpiredAwaitingPayment] Found {} expired AWAITING_PAYMENT bookings", olds.size());
+        for (Booking b : olds) {
+            if (b.getStatus() != BookingStatus.AWAITING_PAYMENT) continue;
+            b.setStatus(BookingStatus.EXPIRED);
+            for (BookingSeat seat : b.getSeats()) {
+                seat.setStatus(SeatStatus.RELEASED);
+                bookingSeatRepository.save(seat);
+            }
+            bookingRepository.save(b);
+            logger.info("[releaseExpiredAwaitingPayment] Expired booking id={} (timeout)", b.getId());
+            notificationService.notifyBookingExpired(b.getId());
+            notificationService.notifySeatStatusChanged(b.getShowtime().getId(), b.getSeats());
+        }
     }
 
     /**
@@ -244,14 +284,20 @@ public class BookingService {
      */
     @Transactional
     public void cancelBooking(Long bookingId) {
-        Booking booking = findById(bookingId);
+        logger.info("[cancelBooking] Cancelling booking id={}", bookingId);
+        Booking booking = bookingServiceProxy.findById(bookingId);
         if (booking.getStatus() == BookingStatus.BOOKED) {
+            logger.warn("[cancelBooking] Attempted to cancel already BOOKED booking id={}", bookingId);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể hủy booking đã thanh toán");
         }
         booking.setStatus(BookingStatus.CANCELLED);
-        booking.getSeats().forEach(s -> s.setStatus(SeatStatus.RELEASED));
-        // Notify seat status changed
+        booking.getSeats().forEach(seat -> {
+            seat.setStatus(SeatStatus.RELEASED);
+            bookingSeatRepository.save(seat);
+        });
+        bookingRepository.save(booking);
         notificationService.notifySeatStatusChanged(booking.getShowtime().getId(), booking.getSeats());
+        logger.info("[cancelBooking] Booking id={} set to CANCELLED and seats released", bookingId);
     }
 
     /**
@@ -312,12 +358,14 @@ public class BookingService {
         for (Booking booking : expiredBookings) {
             for (BookingSeat seat : booking.getSeats()) {
                 seat.setStatus(SeatStatus.RELEASED);
+                bookingSeatRepository.save(seat); // Explicitly persist seat status
             }
             notificationService.notifySeatStatusChanged(showtimeId, booking.getSeats());
         }
         for (Booking booking : cancelledBookings) {
             for (BookingSeat seat : booking.getSeats()) {
                 seat.setStatus(SeatStatus.RELEASED);
+                bookingSeatRepository.save(seat); // Explicitly persist seat status
             }
             notificationService.notifySeatStatusChanged(showtimeId, booking.getSeats());
         }

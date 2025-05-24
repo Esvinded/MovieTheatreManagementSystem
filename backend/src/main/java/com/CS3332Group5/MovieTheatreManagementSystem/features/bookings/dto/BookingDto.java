@@ -11,6 +11,8 @@ public class BookingDto {
     private String movieTitle;
     private String screenName;
     private String theatreName;
+    private java.time.OffsetDateTime showtimeStartTime;
+    private java.time.OffsetDateTime showtimeEndTime;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -33,4 +35,10 @@ public class BookingDto {
 
     public String getTheatreName() { return theatreName; }
     public void setTheatreName(String theatreName) { this.theatreName = theatreName; }
+
+    public java.time.OffsetDateTime getShowtimeStartTime() { return showtimeStartTime; }
+    public void setShowtimeStartTime(java.time.OffsetDateTime showtimeStartTime) { this.showtimeStartTime = showtimeStartTime; }
+
+    public java.time.OffsetDateTime getShowtimeEndTime() { return showtimeEndTime; }
+    public void setShowtimeEndTime(java.time.OffsetDateTime showtimeEndTime) { this.showtimeEndTime = showtimeEndTime; }
 }
