@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Component
 public class PostShowtimeCleanupJob {
@@ -20,5 +21,15 @@ public class PostShowtimeCleanupJob {
     public void cleanupPastShowtimes() {
         OffsetDateTime now = OffsetDateTime.now();
         showtimeRepo.deleteByStartTimeBefore(now);
+    }
+
+    /** Runs every 3 minutes and deletes all past showtimes that have no BOOKED bookings */
+    @Scheduled(cron = "0 */3 * * * *")
+    public void cleanupDeletableShowtimes() {
+        OffsetDateTime cutoff = OffsetDateTime.now().minusMinutes(3);
+        List<Long> deletableIds = showtimeRepo.findDeletableShowtimeIds(cutoff);
+        if (!deletableIds.isEmpty()) {
+            showtimeRepo.deleteShowtimesByIds(deletableIds);
+        }
     }
 }

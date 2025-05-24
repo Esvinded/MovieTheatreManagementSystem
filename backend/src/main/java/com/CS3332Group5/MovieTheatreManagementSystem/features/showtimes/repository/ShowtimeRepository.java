@@ -35,6 +35,15 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
         AND s.theatre_id = :theatreId
         AND DATE(sh.start_time) = :date
     """, nativeQuery = true)
-    List<Showtime> findShowtimesByMovieAndTheatreAndDate(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId, @Param("date") LocalDate date);
+    List<Showtime> findShowtimesByMovieAndTheatreAndDate(@Param("movieId") Long movieId, @Param("theatreId") Long theatreId, @Param("date") LocalDate date);    @Query("""
+        SELECT s.id FROM Showtime s WHERE s.endTime < :cutoff AND NOT EXISTS (
+            SELECT 1 FROM Booking b WHERE b.showtime = s AND b.status = 'BOOKED'
+        )
+    """)
+    List<Long> findDeletableShowtimeIds(@Param("cutoff") OffsetDateTime cutoff);
 
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("DELETE FROM Showtime s WHERE s.id IN :ids")
+    int deleteShowtimesByIds(@Param("ids") List<Long> ids);
 }

@@ -57,4 +57,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Transactional
     @Query("UPDATE BookingSeat bs SET bs.status = 'RELEASED' WHERE bs.booking.id IN (SELECT b.id FROM Booking b WHERE b.status = 'EXPIRED' AND b.bookingDate < :cutoff)")
     int releaseSeatsForExpiredBookings(@Param("cutoff") java.time.Instant cutoff);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Booking b WHERE b.status IN ('EXPIRED', 'CANCELLED') AND b.bookingDate < :cutoff")
+    int deleteExpiredOrCancelledBookings(@Param("cutoff") java.time.Instant cutoff);
 }
