@@ -29,6 +29,13 @@ public class BookingMapper {
         }
         dto.setScreenName(screenName);
         dto.setTheatreName(theatreName);
+
+        // Set showtime start and end time if available
+        if (booking.getShowtime() != null) {
+            dto.setShowtimeStartTime(booking.getShowtime().getStartTime());
+            dto.setShowtimeEndTime(booking.getShowtime().getEndTime());
+        }
+
         return dto;
     }
 
