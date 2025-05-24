@@ -26,7 +26,7 @@ public class PostShowtimeCleanupJob {
     /** Runs every 3 minutes and deletes all past showtimes that have no BOOKED bookings */
     @Scheduled(cron = "0 */3 * * * *")
     public void cleanupDeletableShowtimes() {
-        OffsetDateTime cutoff = OffsetDateTime.now().minusMinutes(3);
+        OffsetDateTime cutoff = OffsetDateTime.now().minusMinutes(10);
         List<Long> deletableIds = showtimeRepo.findDeletableShowtimeIds(cutoff);
         if (!deletableIds.isEmpty()) {
             showtimeRepo.deleteShowtimesByIds(deletableIds);
