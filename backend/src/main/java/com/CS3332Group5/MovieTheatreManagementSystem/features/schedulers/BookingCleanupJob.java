@@ -22,7 +22,7 @@ public class BookingCleanupJob {
      */
     @Scheduled(cron = "0 * * * * *")
     public void cleanupExpiredBookings() {
-        Instant cutoff = Instant.now().minus(Duration.ofMinutes(5));
+        Instant cutoff = Instant.now().minus(Duration.ofMinutes(5)); // revert to 5 minutes for status change
         int bookingsUpdated = bookingRepository.expireOldBookings(cutoff);
         int seatsUpdated = bookingRepository.releaseSeatsForExpiredBookings(cutoff);
         // Optionally log the results
@@ -33,7 +33,7 @@ public class BookingCleanupJob {
      */
     @Scheduled(cron = "0 */3 * * * *")
     public void cleanupExpiredAndReleased() {
-        Instant cutoff = Instant.now().minus(Duration.ofMinutes(3));
+        Instant cutoff = Instant.now().minus(Duration.ofMinutes(10)); // keep 10 minutes for actual deletion
         bookingSeatRepository.deleteReleasedSeats(cutoff);
         bookingRepository.deleteExpiredOrCancelledBookings(cutoff);
         // Optionally log the results
