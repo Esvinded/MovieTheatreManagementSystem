@@ -12,6 +12,7 @@ import { AuthProvider } from "./AuthContext"; // ✅ Import AuthProvider
 import ChangePassword from "./ChangePassword";
 import Footer from "./Footer";
 import BookingHistoryPage from "./BookingHistoryPage";
+import VNPayReturnHandler from "./vnpayReturn"; 
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/account" element={<AccountPage />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/booking-history" element={<BookingHistoryPage />} />
+          <Route path="/vnpay-result" element={<VNPayReturnHandler/>} />
         </Routes>
         <Footer />
       </Router>

@@ -25,4 +25,5 @@ export const cancelBooking = (bookingId) => API.post(`/bookings/${bookingId}/can
 export const getMyBookings = () => API.get("/bookings/my-bookings");
 export const getCurrentBooking = (showtimeId) =>
   API.get(`/bookings/current?showtimeId=${showtimeId}`);
-
+export const vnpayReturn = (queryParams) =>
+  API.get(`/vnpay-return?${new URLSearchParams(queryParams).toString()}`);

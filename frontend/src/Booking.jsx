@@ -15,7 +15,10 @@ import {
   getCurrentBooking,
 } from "./api";
 import dayjs from "dayjs";
-import { useLocation } from "react-router-dom";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+dayjs.extend(isSameOrAfter);
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 const BookingPage = () => {
   const [movies, setMovies] = useState([]);
@@ -32,11 +35,13 @@ const BookingPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const stompClientRef = useRef(null);
-  const sessionId = useRef(`user-${Math.random().toString(36).substr(2, 9)}`);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const preselectedMovieId = queryParams.get("movieId");
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const connectWebSocket = (showtimeId) => {
     const socket = new SockJS("http://localhost:8080/ws");
@@ -125,6 +130,11 @@ const BookingPage = () => {
   };
 
   const handleShowtimeSelect = async (showtime) => {
+     if (!user) {
+      alert("Vui lòng đăng nhập để đặt vé.");
+      navigate("/auth-user");
+      return;
+    }
     setSelectedShowtime(showtime);
     setSeats([]);
     setSelectedSeatIds([]);
@@ -205,27 +215,33 @@ const BookingPage = () => {
     );
   };
 
-  const handleConfirm = async () => {
-    if (!selectedShowtime || selectedSeatIds.length === 0) {
-      alert("Vui lòng chọn suất chiếu và ít nhất một ghế!");
-      return;
-    }
+const handleConfirm = async () => {
+  if (!selectedShowtime || selectedSeatIds.length === 0) {
+    alert("Vui lòng chọn suất chiếu và ít nhất một ghế!");
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      const res = await createBooking({
-        showtimeId: selectedShowtime.id,
-        seatIds: selectedSeatIds,
-      });
-      setBookingId(res.data.id);
-      alert("Đã tạo đơn đặt vé tạm thời. Vui lòng thanh toán để giữ ghế.");
-    } catch (err) {
-      console.error("Lỗi khi tạo booking:", err);
-      alert("Đặt vé thất bại!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (!bookingId) {
+    alert("Không tìm thấy đơn đặt vé. Vui lòng chọn ghế trước!");
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+    const res = await confirmBooking(bookingId);
+    console.log("Xác nhận booking thành công:", res.data);
+    alert("Đã xác nhận đơn đặt vé. Vui lòng tiếp tục thanh toán!");
+    // Optional: chuyển sang bước thanh toán nếu có
+    // navigate(`/payment/${bookingId}`);
+  } catch (err) {
+    console.error("Lỗi khi xác nhận booking:", err);
+    alert("Xác nhận thất bại!");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   const handleCancel = async () => {
     if (!bookingId) return;
@@ -251,7 +267,6 @@ const BookingPage = () => {
     if (!bookingId) return;
     try {
       setIsLoading(true);
-      await confirmBooking(bookingId);
       const res = await payBooking(bookingId);
       setBookingId(null);
       window.location.href = res.data;
@@ -347,8 +362,8 @@ const BookingPage = () => {
         <div>
           <label className="block mb-1">Chọn ngày:</label>
           <div className="flex gap-2 flex-wrap">
-            {availableDates.map((dateStr) => {
-              const date = dayjs(dateStr).format("DD/MM/YYYY");
+            {availableDates.filter((dateStr) => dayjs(dateStr).isSameOrAfter(dayjs(), "day")).map((dateStr) => {
+                          const date = dayjs(dateStr).format("DD/MM/YYYY");
               return (
                 <button
                   key={dateStr}
