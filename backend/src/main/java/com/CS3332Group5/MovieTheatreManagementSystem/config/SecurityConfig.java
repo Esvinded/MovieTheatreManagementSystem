@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/customer/**"
                 ).authenticated()
+                // VNPay return endpoint must be public for payment result
+                .requestMatchers("/api/bookings/vnpay-return").permitAll()
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // Secure all other endpoints

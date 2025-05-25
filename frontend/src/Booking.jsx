@@ -151,20 +151,27 @@ const BookingPage = () => {
         getSeats(showtime.id),
       ]);
       const allSeats = allSeatsRes.data;
-      // Map of seatId to status (BOOKED, RESERVED, etc.)
+      // Map of seatId to status (BOOKED, RESERVED, etc.) and bookingId
       const seatStatusMap = {};
       bookedSeatsRes.data.forEach((s) => {
-        seatStatusMap[s.seatId] = s.status;
+        seatStatusMap[s.seatId] = { status: s.status, bookingId: s.bookingId };
       });
       // Compose seat list with correct status for rendering
       const seatsWithStatus = allSeats.map((seat) => {
         if (userSelectedSeatIds.includes(seat.id)) {
+          // Seat is in the current user's booking (should be blue and editable)
           return { ...seat, status: "SELECTED" };
-        } else if (seatStatusMap[seat.id] === "BOOKED") {
+        } else if (seatStatusMap[seat.id]?.status === "BOOKED") {
+          // Booked by anyone (always gray)
           return { ...seat, status: "BOOKED" };
-        } else if (seatStatusMap[seat.id] === "RESERVED") {
+        } else if (
+          seatStatusMap[seat.id]?.status === "RESERVED" &&
+          seatStatusMap[seat.id]?.bookingId !== booking.id
+        ) {
+          // Reserved by another user's booking (gray)
           return { ...seat, status: "PENDING" };
         } else {
+          // Available
           return { ...seat, status: "AVAILABLE" };
         }
       });

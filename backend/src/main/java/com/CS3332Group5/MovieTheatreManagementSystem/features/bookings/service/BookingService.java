@@ -69,6 +69,14 @@ public class BookingService {
 
     public static final Duration HOLD_DURATION = Duration.ofMinutes(5);
 
+    // Helper: statuses for active bookings
+    private static final java.util.List<BookingStatus> ACTIVE_BOOKING_STATUSES = java.util.List.of(
+        BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED
+    );
+    private static final java.util.List<SeatStatus> ACTIVE_SEAT_STATUSES = java.util.List.of(
+        SeatStatus.RESERVED, SeatStatus.BOOKED
+    );
+
     /**
      * Tìm booking theo id
      */
@@ -111,8 +119,8 @@ public class BookingService {
             // Kiểm double-booking (chỉ tính booking còn hiệu lực)
             boolean exists = bookingSeatRepository.existsActiveSeat(
                 showtimeId, seatId,
-                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
-                List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
+                ACTIVE_SEAT_STATUSES,
+                ACTIVE_BOOKING_STATUSES
             );
             if (exists) {
                 throw new ResponseStatusException(
@@ -151,8 +159,8 @@ public class BookingService {
             // Check ghế đã bị giữ/đặt chưa
             boolean isTaken = bookingSeatRepository.existsActiveSeat(
                 booking.getShowtime().getId(), seatId,
-                List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
-                List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
+                ACTIVE_SEAT_STATUSES,
+                ACTIVE_BOOKING_STATUSES
             );
             if (isTaken) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã có người giữ/đặt");
@@ -190,8 +198,8 @@ public class BookingService {
                 // Check ghế đã bị giữ/đặt chưa
                 boolean isTaken = bookingSeatRepository.existsActiveSeat(
                     booking.getShowtime().getId(), seatId,
-                    List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
-                    List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
+                    ACTIVE_SEAT_STATUSES,
+                    ACTIVE_BOOKING_STATUSES
                 );
                 if (isTaken) {
                     throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã được giữ hoặc đặt");
@@ -231,7 +239,7 @@ public class BookingService {
         }
         return bookingSeatRepository.findByShowtimeIdAndStatusIn(
             showtimeId,
-            List.of(SeatStatus.RESERVED, SeatStatus.BOOKED)
+            ACTIVE_SEAT_STATUSES
         );
     }
 
@@ -436,8 +444,8 @@ public class BookingService {
         // Check if seat is already reserved/booked by any active booking (other than this booking)
         boolean isTaken = bookingSeatRepository.existsActiveSeat(
             showtimeId, seatId,
-            List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
-            List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
+            ACTIVE_SEAT_STATUSES,
+            ACTIVE_BOOKING_STATUSES
         );
         boolean alreadyInBooking = booking.getSeats().stream().anyMatch(bs -> bs.getSeat().getId().equals(seatId));
         if (isTaken && !alreadyInBooking) {

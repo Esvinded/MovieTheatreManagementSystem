@@ -6,6 +6,7 @@ public class BookingSeatDto {
     private String seatType;
     private boolean isAvailable;
     private Long seatId;
+    private Long bookingId;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -21,4 +22,7 @@ public class BookingSeatDto {
 
     public Long getSeatId() { return seatId; }
     public void setSeatId(Long seatId) { this.seatId = seatId; }
+
+    public Long getBookingId() { return bookingId; }
+    public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
 }

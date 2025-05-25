@@ -28,53 +28,54 @@ public class VNPayService {
 
     // Tạo URL thanh toán và trả về cho front-end
     public String createPaymentUrl(Long bookingId, Long amount, String orderInfo, HttpServletRequest request) {
-        Map<String, String> params = new HashMap<>();
-        params.put("vnp_Version", "2.1.0");
-        params.put("vnp_Command", "pay");
-        params.put("vnp_TmnCode", vnpTmnCode);
-        params.put("vnp_TxnRef", String.valueOf(bookingId));
-        params.put("vnp_OrderInfo", orderInfo);
-        params.put("vnp_OrderType", "170000");
-        params.put("vnp_Amount", String.valueOf(amount * 100));
-        params.put("vnp_CurrCode", "VND");
-        params.put("vnp_Locale", "vn");
-        params.put("vnp_IpAddr", getClientIp(request));
-        params.put("vnp_ReturnUrl", vnpReturnUrl);
+        try {
+            Map<String, String> params = new HashMap<>();
+            params.put("vnp_Version", "2.1.0");
+            params.put("vnp_Command", "pay");
+            params.put("vnp_TmnCode", vnpTmnCode);
+            params.put("vnp_Amount", String.valueOf(amount * 100)); // Amount in VND * 100
+            params.put("vnp_CurrCode", "VND");
+            params.put("vnp_TxnRef", String.valueOf(bookingId));
+            params.put("vnp_OrderInfo", orderInfo);
+            params.put("vnp_OrderType", "170000"); // Movie ticket
+            params.put("vnp_Locale", "vn");
+            params.put("vnp_ReturnUrl", vnpReturnUrl);
+            params.put("vnp_IpAddr", getClientIp(request));
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            String createDate = formatter.format(new Date());
+            params.put("vnp_CreateDate", createDate);
+            Calendar expire = Calendar.getInstance();
+            expire.add(Calendar.MINUTE, 15);
+            String expireDate = formatter.format(expire.getTime());
+            params.put("vnp_ExpireDate", expireDate);
 
-        // Thời gian tạo và hết hạn thanh toán
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMddHHmmss");
-        String createDate = fmt.format(cld.getTime());
-        cld.add(Calendar.MINUTE, 15);
-        String expireDate = fmt.format(cld.getTime());
-        params.put("vnp_CreateDate", createDate);
-        params.put("vnp_ExpireDate", expireDate);
+            // 1. Sort params
+            SortedMap<String, String> sortedParams = new TreeMap<>(params);
 
-        // Sắp xếp key và build raw hashData + query string
-        List<String> keys = new ArrayList<>(params.keySet());
-        Collections.sort(keys);
-        StringBuilder hashData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
-        keys.forEach(key -> {
-            String value = params.get(key);
-            if (value == null || value.isEmpty()) return;
-            if (hashData.length() > 0) hashData.append('&');
-            hashData.append(key).append('=').append(value);
-            try {
-                if (query.length() > 0) query.append('&');
-                query.append(URLEncoder.encode(key, StandardCharsets.UTF_8.name()))
-                     .append('=')
-                     .append(URLEncoder.encode(value, StandardCharsets.UTF_8.name()));
-            } catch (Exception e) {
-                throw new RuntimeException("Error encoding VNPay parameter: " + key, e);
+            // 2. Build hashData and query string
+            StringBuilder hashData = new StringBuilder();
+            StringBuilder query = new StringBuilder();
+            for (Map.Entry<String, String> entry : sortedParams.entrySet()) {
+                if (hashData.length() > 0) {
+                    hashData.append('&');
+                    query.append('&');
+                }
+                hashData.append(entry.getKey()).append('=')
+                    .append(URLEncoder.encode(entry.getValue(), java.nio.charset.StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(entry.getKey(), java.nio.charset.StandardCharsets.US_ASCII.toString()))
+                    .append('=')
+                    .append(URLEncoder.encode(entry.getValue(), java.nio.charset.StandardCharsets.US_ASCII.toString()));
             }
-        });
 
-        // Tính HMAC-SHA512
-        String secureHash = hmacSHA512(vnpHashSecret, hashData.toString());
-        query.append("&vnp_SecureHash=").append(secureHash);
+            // 3. Generate HMAC SHA512
+            String secureHash = hmacSHA512(vnpHashSecret, hashData.toString());
 
-        return vnpPayUrl + "?" + query.toString();
+            // 4. Build final URL
+            query.append("&vnp_SecureHash=").append(secureHash);
+            return vnpPayUrl + "?" + query.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating VNPay URL", e);
+        }
     }
 
     // Kiểm tra tính hợp lệ của response từ VNPay
@@ -83,20 +84,20 @@ public class VNPayService {
         String receivedHash = params.remove("vnp_SecureHash");
         params.remove("vnp_SecureHashType");
 
-        // Sắp xếp key và build lại raw hashData
+        // Sắp xếp key và build lại raw hashData (phải encode giống như khi tạo payment URL)
         List<String> keys = new ArrayList<>(params.keySet());
         Collections.sort(keys);
         StringBuilder hashData = new StringBuilder();
-        keys.forEach(key -> {
+        for (String key : keys) {
             String value = params.get(key);
-            if (value == null || value.isEmpty()) return;
+            if (value == null || value.isEmpty()) continue;
             if (hashData.length() > 0) hashData.append('&');
-            hashData.append(key).append('=').append(value);
-        });
-
+            hashData.append(key).append('=')
+                .append(URLEncoder.encode(value, java.nio.charset.StandardCharsets.US_ASCII));
+        }
         // Tính HMAC và so sánh
         String computedHash = hmacSHA512(vnpHashSecret, hashData.toString());
-        return computedHash.equals(receivedHash);
+        return computedHash.equalsIgnoreCase(receivedHash);
     }
 
     private String hmacSHA512(String key, String data) {
@@ -118,5 +119,12 @@ public class VNPayService {
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-FORWARDED-FOR");
         return (ip == null || ip.isEmpty()) ? request.getRemoteAddr() : ip;
+    }
+
+    /**
+     * Utility: For testing, print the VNPay return URL to the backend log so frontend/dev can see it.
+     */
+    public void logReturnUrlForTest(String url) {
+        System.out.println("[VNPay Return URL for test]: " + url);
     }
 }

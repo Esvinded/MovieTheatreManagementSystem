@@ -29,20 +29,22 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> 
 
     boolean existsByBooking_Showtime_IdAndSeat_IdAndStatusIn(Long showtimeId, Long seatId, List<SeatStatus> statuses);
 
+    /**
+     * Check if a seat is RESERVED or BOOKED in an active booking (PENDING, AWAITING_PAYMENT, BOOKED)
+     */
     @Query("""
-            SELECT COUNT(bs) > 0
-            FROM BookingSeat bs
-            WHERE bs.booking.showtime.id = :showtimeId
-              AND bs.seat.id = :seatId
-              AND bs.status IN :seatStatuses
-              AND bs.booking.status IN :bookingStatuses
-        """)
-        boolean existsActiveSeat(
-            @Param("showtimeId") Long showtimeId,
-            @Param("seatId") Long seatId,
-            @Param("seatStatuses") List<SeatStatus> seatStatuses,
-            @Param("bookingStatuses") List<BookingStatus> bookingStatuses
-        );
+        SELECT COUNT(bs) > 0 FROM BookingSeat bs
+        WHERE bs.booking.showtime.id = :showtimeId
+          AND bs.seat.id = :seatId
+          AND bs.status IN :seatStatuses
+          AND bs.booking.status IN :bookingStatuses
+    """)
+    boolean existsActiveSeat(
+        @Param("showtimeId") Long showtimeId,
+        @Param("seatId") Long seatId,
+        @Param("seatStatuses") java.util.List<com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.SeatStatus> seatStatuses,
+        @Param("bookingStatuses") java.util.List<com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.entity.BookingStatus> bookingStatuses
+    );
 
     @Modifying
     @Transactional
