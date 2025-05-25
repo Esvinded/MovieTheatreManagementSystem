@@ -67,7 +67,7 @@ const Layout = ({ children }) => {
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap component="div">
-          Movie Theatre Management
+          HUST CINEMA
         </Typography>
       </Toolbar>
       <Divider />
@@ -117,7 +117,7 @@ const Layout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Movie Theatre Management System
+            HUST Cinema Management System
           </Typography>
           <Typography variant="subtitle1" color="inherit" sx={{ mr: 2 }}>
             Admin Panel
