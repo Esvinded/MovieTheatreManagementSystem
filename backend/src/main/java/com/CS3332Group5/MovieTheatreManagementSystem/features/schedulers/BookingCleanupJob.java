@@ -1,6 +1,7 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.features.schedulers;
 
 import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.repository.BookingRepository;
+import com.CS3332Group5.MovieTheatreManagementSystem.features.bookings.repository.BookingSeatRepository;
 import java.time.Instant;
 import java.time.Duration;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookingCleanupJob {
     private final BookingRepository bookingRepository;
+    private final BookingSeatRepository bookingSeatRepository;
 
-    public BookingCleanupJob(BookingRepository bookingRepository) {
+    public BookingCleanupJob(BookingRepository bookingRepository, BookingSeatRepository bookingSeatRepository) {
         this.bookingRepository = bookingRepository;
+        this.bookingSeatRepository = bookingSeatRepository;
     }
 
     /**
@@ -22,6 +25,17 @@ public class BookingCleanupJob {
         Instant cutoff = Instant.now().minus(Duration.ofMinutes(5));
         int bookingsUpdated = bookingRepository.expireOldBookings(cutoff);
         int seatsUpdated = bookingRepository.releaseSeatsForExpiredBookings(cutoff);
+        // Optionally log the results
+    }
+
+    /**
+     * Runs every 3 minutes to delete expired/cancelled bookings and released booking seats.
+     */
+    @Scheduled(cron = "0 */3 * * * *")
+    public void cleanupExpiredAndReleased() {
+        Instant cutoff = Instant.now().minus(Duration.ofMinutes(3));
+        bookingSeatRepository.deleteReleasedSeats(cutoff);
+        bookingRepository.deleteExpiredOrCancelledBookings(cutoff);
         // Optionally log the results
     }
 }

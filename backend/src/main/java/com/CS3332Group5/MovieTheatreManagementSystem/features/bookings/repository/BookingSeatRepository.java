@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
@@ -41,4 +43,9 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Long> 
             @Param("seatStatuses") List<SeatStatus> seatStatuses,
             @Param("bookingStatuses") List<BookingStatus> bookingStatuses
         );
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM BookingSeat bs WHERE bs.status = 'RELEASED' AND bs.reservedAt < :cutoff")
+    int deleteReleasedSeats(@Param("cutoff") java.time.Instant cutoff);
 }
