@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -187,5 +188,23 @@ public class BookingController {
             }
         }
         return ResponseEntity.badRequest().body("Invalid payment response");
+    }
+
+    /**
+     * Get the current user's PENDING booking for a showtime (for seat selection page reload)
+     */
+    @GetMapping("/current")
+    public ResponseEntity<BookingDto> getCurrentBooking(
+        @RequestParam Long showtimeId,
+        Principal principal
+    ) {
+        Long userId = customerRepository.findByUsername(principal.getName())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"))
+            .getId();
+        Booking booking = bookingService.getCurrentActiveBooking(showtimeId, userId);
+        if (booking == null) {
+            booking = bookingService.getOrCreatePendingBooking(showtimeId, userId);
+        }
+        return ResponseEntity.ok(bookingService.toDtoWithNames(booking));
     }
 }

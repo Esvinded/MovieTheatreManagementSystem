@@ -67,7 +67,7 @@ public class BookingService {
     @org.springframework.context.annotation.Lazy
     private BookingService bookingServiceProxy;
 
-    public static final Duration HOLD_DURATION = Duration.ofMinutes(10); // changed from 5 to 10
+    public static final Duration HOLD_DURATION = Duration.ofMinutes(5);
 
     /**
      * Tìm booking theo id
@@ -381,46 +381,71 @@ public class BookingService {
     }
 
     /**
-     * Real-time seat lock: lock a seat for a user (create or update PENDING booking, add seat as RESERVED)
-     * Ensures only one PENDING booking per user/showtime, and no double-reservation.
+     * Get or create a PENDING booking for a customer and showtime (not expired)
+     */
+    @Transactional
+    public Booking getOrCreatePendingBooking(Long showtimeId, Long customerId) {
+        Instant cutoff = Instant.now().minus(HOLD_DURATION);
+        Booking booking = bookingRepository.findAll().stream()
+            .filter(b -> b.getCustomer().getId().equals(customerId)
+                && b.getShowtime().getId().equals(showtimeId)
+                && b.getStatus() == BookingStatus.PENDING
+                && b.getBookingDate().isAfter(cutoff))
+            .findFirst()
+            .orElse(null);
+        if (booking == null) {
+            Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
+            Showtime showtime = showtimeRepository.findById(showtimeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Suất chiếu không tồn tại"));
+            booking = new Booking();
+            booking.setCustomer(customer);
+            booking.setShowtime(showtime);
+            booking.setStatus(BookingStatus.PENDING);
+            booking.setBookingDate(Instant.now());
+            String movieTitle = movieRepository.findById(showtime.getMovieId())
+                .map(Movie::getTitle)
+                .orElse("Unknown");
+            booking.setMovieTitleSnapshot(movieTitle);
+            booking.setStartTimeSnapshot(showtime.getStartTime());
+            booking = bookingRepository.save(booking);
+        }
+        return booking;
+    }
+
+    /**
+     * Get the current active booking (PENDING, not expired) for a customer and showtime
+     */
+    @Transactional(readOnly = true)
+    public Booking getCurrentActiveBooking(Long showtimeId, Long customerId) {
+        Instant cutoff = Instant.now().minus(HOLD_DURATION);
+        return bookingRepository.findAll().stream()
+            .filter(b -> b.getCustomer().getId().equals(customerId)
+                && b.getShowtime().getId().equals(showtimeId)
+                && b.getStatus() == BookingStatus.PENDING
+                && b.getBookingDate().isAfter(cutoff))
+            .findFirst()
+            .orElse(null);
+    }
+
+    /**
+     * Real-time seat lock: only use the current user's PENDING booking for this showtime
      */
     @Transactional
     public void lockSeat(Long showtimeId, Long seatId, String username) {
         Customer customer = customerRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
-        Showtime showtime = showtimeRepository.findById(showtimeId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Suất chiếu không tồn tại"));
-        // Find or create PENDING booking for this user/showtime
-        Booking booking = bookingRepository.findAll().stream()
-            .filter(b -> b.getCustomer().getId().equals(customer.getId()) &&
-                         b.getShowtime().getId().equals(showtimeId) &&
-                         b.getStatus() == BookingStatus.PENDING)
-            .findFirst()
-            .orElseGet(() -> {
-                Booking b = new Booking();
-                b.setCustomer(customer);
-                b.setShowtime(showtime);
-                b.setStatus(BookingStatus.PENDING);
-                b.setBookingDate(Instant.now());
-                // Fix: fetch movie title from MovieRepository
-                String movieTitle = movieRepository.findById(showtime.getMovieId())
-                    .map(Movie::getTitle)
-                    .orElse("Unknown");
-                b.setMovieTitleSnapshot(movieTitle);
-                b.setStartTimeSnapshot(showtime.getStartTime());
-                return bookingRepository.save(b);
-            });
-        // Check if seat is already reserved/booked by any active booking
+        Booking booking = getOrCreatePendingBooking(showtimeId, customer.getId());
+        // Check if seat is already reserved/booked by any active booking (other than this booking)
         boolean isTaken = bookingSeatRepository.existsActiveSeat(
             showtimeId, seatId,
             List.of(SeatStatus.RESERVED, SeatStatus.BOOKED),
             List.of(BookingStatus.PENDING, BookingStatus.AWAITING_PAYMENT, BookingStatus.BOOKED)
         );
-        if (isTaken) {
+        boolean alreadyInBooking = booking.getSeats().stream().anyMatch(bs -> bs.getSeat().getId().equals(seatId));
+        if (isTaken && !alreadyInBooking) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ghế đã có người giữ/đặt");
         }
-        // Add seat to booking if not already present
-        boolean alreadyInBooking = booking.getSeats().stream().anyMatch(bs -> bs.getSeat().getId().equals(seatId));
         if (!alreadyInBooking) {
             Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ghế không tồn tại"));
@@ -436,20 +461,21 @@ public class BookingService {
     }
 
     /**
-     * Real-time seat unlock: unlock a seat for a user (remove seat from PENDING booking)
+     * Real-time seat unlock: only use the current user's PENDING booking for this showtime
      */
     @Transactional
     public void unlockSeat(Long showtimeId, Long seatId, String username) {
         Customer customer = customerRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
-        // Find PENDING booking for this user/showtime
+        Instant cutoff = Instant.now().minus(HOLD_DURATION);
         Booking booking = bookingRepository.findAll().stream()
-            .filter(b -> b.getCustomer().getId().equals(customer.getId()) &&
-                         b.getShowtime().getId().equals(showtimeId) &&
-                         b.getStatus() == BookingStatus.PENDING)
+            .filter(b -> b.getCustomer().getId().equals(customer.getId())
+                && b.getShowtime().getId().equals(showtimeId)
+                && b.getStatus() == BookingStatus.PENDING
+                && b.getBookingDate().isAfter(cutoff))
             .findFirst()
             .orElse(null);
-        if (booking == null) return; // nothing to do
+        if (booking == null) return;
         boolean removed = booking.getSeats().removeIf(bs -> bs.getSeat().getId().equals(seatId));
         if (removed) {
             bookingRepository.save(booking);
