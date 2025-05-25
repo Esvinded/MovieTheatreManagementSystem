@@ -12,6 +12,7 @@ import {
   payBooking,
   cancelBooking,
   getSeatsByScreen,
+  getCurrentBooking,
 } from "./api";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
@@ -135,20 +136,38 @@ const BookingPage = () => {
     setBookingId(null);
 
     try {
+      // Fetch user's current booking for this showtime
+      const bookingRes = await getCurrentBooking(showtime.id);
+      const booking = bookingRes.data;
+      const userSelectedSeatIds = booking.seats
+        ? booking.seats.map((s) => s.seatId)
+        : [];
+      setBookingId(booking.id);
+      setSelectedSeatIds(userSelectedSeatIds);
+
+      // Fetch all seats and all reserved/booked seats for this showtime
       const [allSeatsRes, bookedSeatsRes] = await Promise.all([
         getSeatsByScreen(showtime.screenId),
         getSeats(showtime.id),
       ]);
-
       const allSeats = allSeatsRes.data;
-      const bookedSeatIds = new Set(bookedSeatsRes.data.map((s) => s.seatId));
-      console.log("Booked seats:", bookedSeatIds);
-      console.log("All seats:", allSeats);
-      const seatsWithStatus = allSeats.map((seat) => ({
-        ...seat,
-        status: bookedSeatIds.has(seat.id) ? "BOOKED" : "AVAILABLE",
-      }));
-      console.log("Seats with status:", seatsWithStatus);
+      // Map of seatId to status (BOOKED, RESERVED, etc.)
+      const seatStatusMap = {};
+      bookedSeatsRes.data.forEach((s) => {
+        seatStatusMap[s.seatId] = s.status;
+      });
+      // Compose seat list with correct status for rendering
+      const seatsWithStatus = allSeats.map((seat) => {
+        if (userSelectedSeatIds.includes(seat.id)) {
+          return { ...seat, status: "SELECTED" };
+        } else if (seatStatusMap[seat.id] === "BOOKED") {
+          return { ...seat, status: "BOOKED" };
+        } else if (seatStatusMap[seat.id] === "RESERVED") {
+          return { ...seat, status: "PENDING" };
+        } else {
+          return { ...seat, status: "AVAILABLE" };
+        }
+      });
       setSeats(seatsWithStatus);
       connectWebSocket(showtime.id);
     } catch (err) {
@@ -269,8 +288,6 @@ const BookingPage = () => {
         return "bg-emerald-500 text-white hover:bg-emerald-600";
     }
   };
-
-
 
   return (
     <div className="min-h-screen w-full px-4 md:px8 bg-[#0a0a23] p-8 mx-auto space-y-6 text-white">

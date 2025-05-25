@@ -381,17 +381,14 @@ public class BookingService {
     }
 
     /**
-     * Get or create a PENDING booking for a customer and showtime (not expired)
+     * Get or create a PENDING booking for a customer and showtime (not expired), using repository for atomicity
      */
     @Transactional
     public Booking getOrCreatePendingBooking(Long showtimeId, Long customerId) {
         Instant cutoff = Instant.now().minus(HOLD_DURATION);
-        Booking booking = bookingRepository.findAll().stream()
-            .filter(b -> b.getCustomer().getId().equals(customerId)
-                && b.getShowtime().getId().equals(showtimeId)
-                && b.getStatus() == BookingStatus.PENDING
-                && b.getBookingDate().isAfter(cutoff))
-            .findFirst()
+        // Use repository for efficient lookup
+        Booking booking = bookingRepository.findByCustomerIdAndShowtimeIdAndStatus(customerId, showtimeId, BookingStatus.PENDING)
+            .filter(b -> b.getBookingDate().isAfter(cutoff))
             .orElse(null);
         if (booking == null) {
             Customer customer = customerRepository.findById(customerId)
@@ -435,7 +432,7 @@ public class BookingService {
     public void lockSeat(Long showtimeId, Long seatId, String username) {
         Customer customer = customerRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer không tồn tại"));
-        Booking booking = getOrCreatePendingBooking(showtimeId, customer.getId());
+        Booking booking = bookingServiceProxy.getOrCreatePendingBooking(showtimeId, customer.getId());
         // Check if seat is already reserved/booked by any active booking (other than this booking)
         boolean isTaken = bookingSeatRepository.existsActiveSeat(
             showtimeId, seatId,

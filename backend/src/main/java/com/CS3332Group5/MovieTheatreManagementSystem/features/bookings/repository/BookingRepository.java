@@ -48,6 +48,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByCustomerOrderByBookingDateDesc(Customer customer);
 
+    // Efficient lookup for a user's PENDING booking for a showtime
+    java.util.Optional<Booking> findByCustomerIdAndShowtimeIdAndStatus(Long customerId, Long showtimeId, BookingStatus status);
+
     @Modifying
     @Transactional
     @Query("UPDATE Booking b SET b.status = 'EXPIRED' WHERE b.status IN ('PENDING', 'AWAITING_PAYMENT') AND b.bookingDate < :cutoff")

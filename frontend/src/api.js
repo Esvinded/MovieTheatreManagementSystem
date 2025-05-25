@@ -23,4 +23,6 @@ export const confirmBooking = (bookingId) => API.post(`/bookings/${bookingId}/co
 export const payBooking = (bookingId) => API.post(`/bookings/${bookingId}/pay`);
 export const cancelBooking = (bookingId) => API.post(`/bookings/${bookingId}/cancel`);
 export const getMyBookings = () => API.get("/bookings/my-bookings");
+export const getCurrentBooking = (showtimeId) =>
+  API.get(`/bookings/current?showtimeId=${showtimeId}`);
 
