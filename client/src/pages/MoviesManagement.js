@@ -91,16 +91,32 @@ const MoviesManagement = () => {
   };
 
   const handleDeleteMovie = async () => {
-    try {
-      await moviesAPI.deleteMovie(selectedMovie.id);
-      const updatedMovies = await moviesAPI.getAllMovies();
-      setMovies(updatedMovies);
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error('Error deleting movie:', error);
-    }
-  };
+     if (!selectedMovie || !selectedMovie.id) {
+    alert("Không thể xóa phim: ID không hợp lệ.");
+    console.warn("selectedMovie is invalid:", selectedMovie);
+    return;
+  }
 
+  try {
+    console.log("Đang xoá phim có ID:", selectedMovie.id);
+    await moviesAPI.deleteMovie(selectedMovie.id);
+
+    const updatedMovies = await moviesAPI.getAllMovies();
+    setMovies(updatedMovies);
+    handleCloseDeleteDialog();
+
+    alert(`Phim "${selectedMovie.title}" đã được xoá thành công.`);
+  } catch (error) {
+    console.error("Lỗi khi xóa phim:", error);
+    if (error.response?.status === 404) {
+      alert("Phim không tồn tại hoặc đã bị xóa trước đó.");
+    } else if (error.response?.status === 400) {
+      alert("Yêu cầu xoá không hợp lệ. Vui lòng kiểm tra lại.");
+    } else {
+      alert("Đã xảy ra lỗi khi xóa phim. Vui lòng thử lại sau.");
+    }
+  }
+};
   const getStatusColor = (status) => status === 'ACTIVE' ? 'success' : 'default';
   const getStatusLabel = (status) => status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động';
 
@@ -212,7 +228,7 @@ const MoviesManagement = () => {
                     </TableCell>
                     <TableCell align="right">
                       <IconButton 
-                        color="error" 
+                        color="error"
                         onClick={() => handleOpenDeleteDialog(movie)}
                         title="Xóa phim"
                       >
@@ -294,6 +310,24 @@ const MoviesManagement = () => {
                     sx={{ mb: 2 }}
                   />
                 </Grid>
+                {movieForm.PosterURL && (
+  <Grid item xs={12} sm={6}>
+    <Typography variant="subtitle2" gutterBottom>Ảnh xem trước:</Typography>
+    <img
+      src={movieForm.PosterURL}
+      alt="Poster Preview"
+      style={{
+        width: '100%',
+        maxHeight: 200,
+        objectFit: 'contain',
+        borderRadius: 4,
+        border: '1px solid #ccc',
+        padding: 4
+      }}
+      onError={(e) => e.target.style.display = 'none'}
+    />
+  </Grid>
+)}
               </Grid>
             </Box>
           </DialogContent>
