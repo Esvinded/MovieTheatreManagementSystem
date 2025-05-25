@@ -47,14 +47,9 @@ const BookingPage = () => {
         console.log("✅ STOMP connected");
 
         client.subscribe(`/topic/showtime/${showtimeId}/seats`, (message) => {
-          const seatUpdate = JSON.parse(message.body);
-          setSeats((prevSeats) =>
-            prevSeats.map((seat) =>
-              seat.id === seatUpdate.seatId
-                ? { ...seat, status: seatUpdate.status }
-                : seat
-            )
-          );
+          // The backend now sends an array of BookingSeatDto with status and bookingId
+          const updatedSeats = JSON.parse(message.body);
+          setSeats(updatedSeats);
         });
       },
       onStompError: (frame) => {
@@ -160,19 +155,19 @@ const BookingPage = () => {
       const seatsWithStatus = allSeats.map((seat) => {
         if (userSelectedSeatIds.includes(seat.id)) {
           // Seat is in the current user's booking (should be blue and editable)
-          return { ...seat, status: "SELECTED" };
+          return { ...seat, status: "RESERVED", bookingId: booking.id };
         } else if (seatStatusMap[seat.id]?.status === "BOOKED") {
           // Booked by anyone (always gray)
-          return { ...seat, status: "BOOKED" };
+          return { ...seat, status: "BOOKED", bookingId: seatStatusMap[seat.id]?.bookingId };
         } else if (
           seatStatusMap[seat.id]?.status === "RESERVED" &&
           seatStatusMap[seat.id]?.bookingId !== booking.id
         ) {
           // Reserved by another user's booking (gray)
-          return { ...seat, status: "PENDING" };
+          return { ...seat, status: "RESERVED", bookingId: seatStatusMap[seat.id]?.bookingId };
         } else {
           // Available
-          return { ...seat, status: "AVAILABLE" };
+          return { ...seat, status: "AVAILABLE", bookingId: null };
         }
       });
       setSeats(seatsWithStatus);
@@ -185,22 +180,24 @@ const BookingPage = () => {
 
   const handleSeatClick = (seatId) => {
     const seat = seats.find((s) => s.id === seatId);
-    if (!seat || seat.status === "BOOKED") return;
+    // Only allow selection if seat is AVAILABLE or RESERVED by current user
+    if (!seat || (seat.status !== "AVAILABLE" && !(seat.status === "RESERVED" && seat.bookingId === bookingId))) return;
 
     const isSelected = selectedSeatIds.includes(seatId);
-    const newSelectedSeats = isSelected
-      ? selectedSeatIds.filter((id) => id !== seatId)
-      : [...selectedSeatIds, seatId];
-
+    let newSelectedSeats;
+    if (isSelected) {
+      newSelectedSeats = selectedSeatIds.filter((id) => id !== seatId);
+    } else {
+      newSelectedSeats = [...selectedSeatIds, seatId];
+    }
     setSelectedSeatIds(newSelectedSeats);
     setSeats((prev) =>
       prev.map((s) =>
         s.id === seatId
-          ? { ...s, status: isSelected ? "AVAILABLE" : "SELECTED" }
+          ? { ...s, status: isSelected ? "AVAILABLE" : "RESERVED", bookingId: isSelected ? null : bookingId }
           : s
       )
     );
-
     sendSeatUpdate(
       selectedShowtime.id,
       seatId,
@@ -283,17 +280,18 @@ const BookingPage = () => {
       });
   }, []);
 
-  const getSeatClass = (status) => {
-    switch (status) {
-      case "BOOKED":
-        return "bg-gray-500 text-white cursor-not-allowed";
-      case "SELECTED":
-        return "bg-blue-600 text-white";
-      case "PENDING":
-        return "bg-red-500 text-white cursor-not-allowed";
-      default:
-        return "bg-emerald-500 text-white hover:bg-emerald-600";
+  const getSeatClass = (seat) => {
+    if (seat.status === "BOOKED") {
+      return "bg-gray-500 text-white cursor-not-allowed";
     }
+    if (seat.status === "RESERVED" && seat.bookingId !== bookingId) {
+      return "bg-gray-500 text-white cursor-not-allowed";
+    }
+    if (seat.status === "RESERVED" && seat.bookingId === bookingId) {
+      return "bg-blue-600 text-white";
+    }
+    // Available
+    return "bg-emerald-500 text-white hover:bg-emerald-600";
   };
 
   return (
@@ -424,11 +422,9 @@ const BookingPage = () => {
                         {sortedRow.map((seat) => (
                           <button
                             key={seat.id}
-                            disabled={seat.status === "BOOKED"}
+                            disabled={seat.status === "BOOKED" || (seat.status === "RESERVED" && seat.bookingId !== bookingId)}
                             onClick={() => handleSeatClick(seat.id)}
-                            className={`text-xs p-2 rounded w-8 h-8 flex items-center justify-center ${getSeatClass(
-                              seat.status
-                            )}`}
+                            className={`text-xs p-2 rounded w-8 h-8 flex items-center justify-center ${getSeatClass(seat)}`}
                           >
                             {seat.colNumber}
                           </button>
@@ -444,7 +440,7 @@ const BookingPage = () => {
           <div className="mt-4 flex gap-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-gray-500 rounded" />
-              <span>Đã đặt</span>
+              <span>Đã đặt/Đang giữ bởi người khác</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-emerald-500 rounded" />
@@ -452,7 +448,7 @@ const BookingPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-600 rounded" />
-              <span>Đang chọn</span>
+              <span>Đang chọn (của bạn)</span>
             </div>
           </div>
 

@@ -48,6 +48,7 @@ public class BookingMapper {
         dto.setSeatType(s != null ? s.getStatus().name() : null);
         dto.setAvailable(!(seat.getStatus().name().equals("RESERVED") || seat.getStatus().name().equals("BOOKED")));
         dto.setBookingId(seat.getBooking() != null ? seat.getBooking().getId() : null);
+        dto.setStatus(seat.getStatus().name()); // Add status for real-time UI
         return dto;
     }
 
