@@ -1,4 +1,5 @@
 package com.CS3332Group5.MovieTheatreManagementSystem.config;
+import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,7 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:5173"); // Frontend URL
+        config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));// Frontend URL
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);
