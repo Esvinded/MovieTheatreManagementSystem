@@ -28,12 +28,6 @@ public class SecurityConfig {
                 ).permitAll()
                 // Allow public access to homepage
                 .requestMatchers(
-<<<<<<< HEAD
-                    "/api/customer/**"
-                ).authenticated()
-                // VNPay return endpoint must be public for payment result
-                .requestMatchers("/api/bookings/vnpay-return").permitAll()
-=======
                     "/api/public/**"
                 ).permitAll()
                 // Customer only endpoints
@@ -49,7 +43,6 @@ public class SecurityConfig {
                     "/api/movie/**",
                     "/api/showtimes/**"
                 ).hasRole("STAFF")  
->>>>>>> bce6e6ed7ff8bb5e7072a2114a97642e549a3ec0
                 // Static resources
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 // Secure all other endpoints
