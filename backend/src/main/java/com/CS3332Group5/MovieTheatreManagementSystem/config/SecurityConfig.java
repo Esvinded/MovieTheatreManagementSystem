@@ -33,7 +33,8 @@ public class SecurityConfig {
                 // Customer only endpoints
                 .requestMatchers(
                     "/api/customer/**",
-                    "/api/booking/**"
+                    "/api/booking/**",
+                    "/api/seats/**"
                 ).hasRole("CUSTOMER")
                 // Staff only endpoints
                 .requestMatchers(

@@ -129,64 +129,74 @@ const BookingPage = () => {
     }
   };
 
-  const handleShowtimeSelect = async (showtime) => {
-     if (!user) {
-      alert("Vui lòng đăng nhập để đặt vé.");
-      navigate("/auth-user");
-      return;
-    }
-    setSelectedShowtime(showtime);
-    setSeats([]);
-    setSelectedSeatIds([]);
-    setBookingId(null);
+ const handleShowtimeSelect = async (showtime) => {
+  if (!user) {
+    alert("Vui lòng đăng nhập để đặt vé.");
+    navigate("/auth-user");
+    return;
+  }
+  setSelectedShowtime(showtime);
+  setSeats([]);
+  setSelectedSeatIds([]);
+  setBookingId(null);
 
-    try {
-      // Fetch user's current booking for this showtime
-      const bookingRes = await getCurrentBooking(showtime.id);
-      const booking = bookingRes.data;
-      const userSelectedSeatIds = booking.seats
-        ? booking.seats.map((s) => s.seatId)
-        : [];
-      setBookingId(booking.id);
-      setSelectedSeatIds(userSelectedSeatIds);
+  try {
+    // Fetch user's current booking for this showtime
+    const bookingRes = await getCurrentBooking(showtime.id);
+    const booking = bookingRes.data;
+    const userSelectedSeatIds = booking.seats
+      ? booking.seats.map((s) => s.seatId)
+      : [];
+    setBookingId(booking.id);
+    setSelectedSeatIds(userSelectedSeatIds);
 
-      // Fetch all seats and all reserved/booked seats for this showtime
-      const [allSeatsRes, bookedSeatsRes] = await Promise.all([
-        getSeatsByScreen(showtime.screenId),
-        getSeats(showtime.id),
-      ]);
-      const allSeats = allSeatsRes.data;
-      // Map of seatId to status (BOOKED, RESERVED, etc.) and bookingId
-      const seatStatusMap = {};
-      bookedSeatsRes.data.forEach((s) => {
-        seatStatusMap[s.seatId] = { status: s.status, bookingId: s.bookingId };
-      });
-      // Compose seat list with correct status for rendering
-      const seatsWithStatus = allSeats.map((seat) => {
-        if (userSelectedSeatIds.includes(seat.id)) {
-          // Seat is in the current user's booking (should be blue and editable)
-          return { ...seat, status: "RESERVED", bookingId: booking.id };
-        } else if (seatStatusMap[seat.id]?.status === "BOOKED") {
-          // Booked by anyone (always gray)
-          return { ...seat, status: "BOOKED", bookingId: seatStatusMap[seat.id]?.bookingId };
-        } else if (
-          seatStatusMap[seat.id]?.status === "RESERVED" &&
-          seatStatusMap[seat.id]?.bookingId !== booking.id
-        ) {
-          // Reserved by another user's booking (gray)
-          return { ...seat, status: "RESERVED", bookingId: seatStatusMap[seat.id]?.bookingId };
-        } else {
-          // Available
-          return { ...seat, status: "AVAILABLE", bookingId: null };
-        }
-      });
-      setSeats(seatsWithStatus);
-      connectWebSocket(showtime.id);
-    } catch (err) {
-      console.error("Lỗi khi tải ghế:", err);
-      alert("Không thể tải ghế.");
-    }
-  };
+    // Fetch all seats and all reserved/booked seats for this showtime
+    const [allSeatsRes, bookedSeatsRes] = await Promise.all([
+      getSeatsByScreen(showtime.screenId),
+      getSeats(showtime.id),
+    ]);
+    const allSeats = allSeatsRes.data;
+    console.log("Tất cả ghế:", allSeats);
+    console.log("Ghế đã đặt:", bookedSeatsRes.data);
+
+    // Map of seatId to status (BOOKED, RESERVED, etc.) and bookingId
+    const seatStatusMap = {};
+    bookedSeatsRes.data.forEach((s) => {
+      seatStatusMap[s.seatId] = { status: s.status, bookingId: s.bookingId };
+    });
+    console.log("Trạng thái ghế:", seatStatusMap);
+
+    // Compose seat list with correct status for rendering
+    const seatsWithStatus = allSeats.map((seat) => {
+      if (seat.status === "INACTIVE") {
+        // Giữ nguyên trạng thái INACTIVE
+        return { ...seat, status: "INACTIVE", bookingId: null };
+      }
+      if (userSelectedSeatIds.includes(seat.id)) {
+        // Seat is in the current user's booking (should be blue and editable)
+        return { ...seat, status: "RESERVED", bookingId: booking.id };
+      }
+      if (seatStatusMap[seat.id]?.status === "BOOKED") {
+        // Booked by anyone (always gray)
+        return { ...seat, status: "BOOKED", bookingId: seatStatusMap[seat.id]?.bookingId };
+      }
+      if (
+        seatStatusMap[seat.id]?.status === "RESERVED" &&
+        seatStatusMap[seat.id]?.bookingId !== booking.id
+      ) {
+        // Reserved by another user's booking (gray)
+        return { ...seat, status: "RESERVED", bookingId: seatStatusMap[seat.id]?.bookingId };
+      }
+      // Available (only for ACTIVE seats)
+      return { ...seat, status: "AVAILABLE", bookingId: null };
+    });
+    setSeats(seatsWithStatus);
+    connectWebSocket(showtime.id);
+  } catch (err) {
+    console.error("Lỗi khi tải ghế:", err);
+    alert("Không thể tải ghế.");
+  }
+};
 
   const handleSeatClick = (seatId) => {
     const seat = seats.find((s) => s.id === seatId);
@@ -296,11 +306,15 @@ const handleConfirm = async () => {
   }, []);
 
   const getSeatClass = (seat) => {
+    console.log(`Seat ${seat.id}: ${seat.status}`);
+    if (seat.status === "INACTIVE") {
+      return "bg-red-300 text-gray-500 cursor-not-allowed";
+    }
     if (seat.status === "BOOKED") {
-      return "bg-gray-500 text-white cursor-not-allowed";
+      return "bg-gray-500 !important text-white cursor-not-allowed";
     }
     if (seat.status === "RESERVED" && seat.bookingId !== bookingId) {
-      return "bg-gray-500 text-white cursor-not-allowed";
+      return "bg-gray-500 !important text-white cursor-not-allowed";
     }
     if (seat.status === "RESERVED" && seat.bookingId === bookingId) {
       return "bg-blue-600 text-white";
@@ -437,7 +451,7 @@ const handleConfirm = async () => {
                         {sortedRow.map((seat) => (
                           <button
                             key={seat.id}
-                            disabled={seat.status === "BOOKED" || (seat.status === "RESERVED" && seat.bookingId !== bookingId)}
+                            disabled={seat.status === "BOOKED"  || (seat.status === "RESERVED" && seat.bookingId !== bookingId) || seat.status === "INACTIVE"}
                             onClick={() => handleSeatClick(seat.id)}
                             className={`text-xs p-2 rounded w-8 h-8 flex items-center justify-center ${getSeatClass(seat)}`}
                           >
@@ -464,6 +478,10 @@ const handleConfirm = async () => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-600 rounded" />
               <span>Đang chọn (của bạn)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-300 rounded" />
+              <span>Ghế đang bảo trì</span>
             </div>
           </div>
 
