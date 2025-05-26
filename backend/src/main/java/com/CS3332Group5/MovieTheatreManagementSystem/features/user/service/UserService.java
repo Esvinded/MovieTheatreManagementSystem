@@ -40,7 +40,7 @@ public class UserService {
     
         // Set default profile picture if not provided
         if (customer.getProfileImageUrl() == null || customer.getProfileImageUrl().isEmpty()) {
-            customer.setProfileImageUrl("/uploads/default-profile-picture.png");
+            customer.setProfileImageUrl("https://sbcf.fr/wp-content/uploads/2018/03/sbcf-default-avatar.png");
         }
         
         customerRepository.save(customer);

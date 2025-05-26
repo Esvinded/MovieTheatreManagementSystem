@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class MovieTheatreManagementSystemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MovieTheatreManagementSystemApplication.class, args);
+	    SpringApplication.run(MovieTheatreManagementSystemApplication.class, args);
 	}
 
 }
