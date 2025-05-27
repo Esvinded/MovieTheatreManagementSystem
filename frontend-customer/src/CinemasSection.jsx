@@ -5,35 +5,21 @@ const CinemasSection = () => {
   const [cinemas, setCinemas] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('user');
-    const token = stored ? JSON.parse(stored).token : null;
+useEffect(() => {
+  axios
+    .get('http://localhost:8080/api/public/theatres/all')
+    .then((res) => {
+      if (!Array.isArray(res.data)) {
+        throw new Error('Dữ liệu trả về không hợp lệ.');
+      }
+      setCinemas(res.data);
+    })
+    .catch((err) => {
+      console.error('Lỗi khi lấy danh sách rạp:', err);
+      setError('Không thể lấy danh sách rạp.');
+    });
+}, []);
 
-    if (!token) {
-      setError('Bạn chưa đăng nhập.');
-      return;
-    }
-
-    axios
-      .get('http://localhost:8080/api/public/theatres/all', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      })
-      .then((res) => {
-        if (!Array.isArray(res.data)) {
-          throw new Error('Dữ liệu trả về không hợp lệ.');
-        }
-        setCinemas(res.data);
-      })
-      .catch((err) => {
-        console.error('Lỗi khi lấy danh sách rạp:', err);
-        setError(
-          'Không thể lấy danh sách rạp. Có thể bạn chưa đăng nhập hoặc token đã hết hạn.'
-        );
-      });
-  }, []);
 
   if (error) {
     return (

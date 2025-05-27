@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       { username, password },
       { withCredentials: true } // Đảm bảo gửi cookie
     );
-
+    console.log("Login response:", response.data);
     if (response.data === "Customer login successful") {
       const profile = await axios.get("http://localhost:8080/api/customer/profile");
       setUser(profile.data);

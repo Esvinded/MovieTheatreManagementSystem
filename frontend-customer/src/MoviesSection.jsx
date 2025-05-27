@@ -7,35 +7,21 @@ const MoviesSection = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('user');
-    const token = stored ? JSON.parse(stored).token : null;
+ useEffect(() => {
+  axios
+    .get('http://localhost:8080/api/public/movies')
+    .then((res) => {
+      if (!Array.isArray(res.data)) {
+        throw new Error('Dữ liệu trả về không hợp lệ.');
+      }
+      setMovies(res.data);
+    })
+    .catch((err) => {
+      console.error('Lỗi khi lấy danh sách phim:', err);
+      setError('Không thể lấy danh sách phim.');
+    });
+}, []);
 
-    if (!token) {
-      setError('Bạn chưa đăng nhập.');
-      return;
-    }
-
-    axios
-      .get('http://localhost:8080/api/public/movies', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      })
-      .then((res) => {
-        if (!Array.isArray(res.data)) {
-          throw new Error('Dữ liệu trả về không hợp lệ.');
-        }
-        setMovies(res.data);
-      })
-      .catch((err) => {
-        console.error('Lỗi khi lấy danh sách phim:', err);
-        setError(
-          'Không thể lấy danh sách phim. Có thể bạn chưa đăng nhập hoặc token đã hết hạn.'
-        );
-      });
-  }, []);
 
   const formatDuration = (durationStr) => {
     const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);

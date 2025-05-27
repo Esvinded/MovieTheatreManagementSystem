@@ -6,7 +6,7 @@ const API_BASE_URL = "http://localhost:8080";
 // Cấu hình axios với headers mặc định
 axios.defaults.headers.common["Content-Type"] = "application/json";
 axios.defaults.headers.common["Accept"] = "application/json";
-
+axios.defaults.withCredentials = true;
 // Hàm tạo URL đầy đủ cho API endpoint
 const getApiUrl = (endpoint) => `${API_BASE_URL}${endpoint}`;
 

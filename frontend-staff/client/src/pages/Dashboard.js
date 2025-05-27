@@ -243,24 +243,7 @@ const Dashboard = () => {
               </Button>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={4} lg={20} sx={{width: '20%'}}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 140, bgcolor: '#c8e6c9' }}>
-              <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                Lịch chiếu
-              </Typography>
-              <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', my: 'auto' }}>
-                {loading ? '...' : stats.showtimes}
-              </Typography>
-              <Button 
-                size="small" 
-                component={Link} 
-                to="/admin/showtimes"
-                sx={{ alignSelf: 'flex-end', mt: 'auto' }}
-              >
-                Xem chi tiết
-              </Button>
-            </Paper>
-          </Grid>
+          
           <Grid item xs={12} sm={6} md={4} lg={20} sx={{width: '20%'}}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: 140, bgcolor: '#fff9c4' }}>
               <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
@@ -269,7 +252,7 @@ const Dashboard = () => {
               <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', my: 'auto' }}>
                 {loading ? '...' : stats.theatres}
               </Typography>
-              <Button 
+              <Button cd
                 size="small" 
                 component={Link} 
                 to="/admin/theatres"

@@ -5,7 +5,6 @@ import PricesSection from "./PricesSection";
 import CinemasSection from "./CinemasSection";
 import MoviesSection from "./MoviesSection";
 import Navbar from "./NavBar";
-import AuthStaf from "./AuthStaff";
 import AuthUser from "./AuthUser";
 import AccountPage from "./AccountPage";
 import { AuthProvider } from "./AuthContext"; // ✅ Import AuthProvider
@@ -26,7 +25,6 @@ function App() {
           <Route path="/prices" element={<PricesSection />} />
           <Route path="/booking" element={<MovieBooking />} />
           <Route path="/auth-user" element={<AuthUser />} />
-          <Route path="/auth-staff" element={<AuthStaf />} />
           <Route path="/account" element={<AccountPage />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/booking-history" element={<BookingHistoryPage />} />

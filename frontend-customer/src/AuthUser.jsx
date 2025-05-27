@@ -40,7 +40,8 @@ export default function AuthUser() {
     e.preventDefault();
     try {
       const response = await axios.post("http://localhost:8080/api/auth/forgot-password", {
-        email,
+        username,
+        email
       });
       console.log("Yêu cầu đặt lại mật khẩu thành công:", response.data);
       alert("Vui lòng kiểm tra email để đặt lại mật khẩu.");
@@ -61,6 +62,14 @@ export default function AuthUser() {
 
         {showResetPassword ? (
           <form onSubmit={handleResetPassword} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Nhập tên đăng nhập"
+              className="w-full p-2 mb-3 border rounded"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
             <input
               type="email"
               placeholder="Nhập email để đặt lại mật khẩu"
