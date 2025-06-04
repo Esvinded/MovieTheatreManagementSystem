@@ -9,10 +9,7 @@ const CinemasSection = () => {
     const stored = localStorage.getItem('user');
     const token = stored ? JSON.parse(stored).token : null;
 
-    if (!token) {
-      setError('Bạn chưa đăng nhập.');
-      return;
-    }
+    
 
     axios
       .get('http://localhost:8080/api/public/theatres/all', {

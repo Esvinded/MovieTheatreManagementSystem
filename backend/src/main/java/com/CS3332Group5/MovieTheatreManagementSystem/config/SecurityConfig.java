@@ -28,19 +28,18 @@ public class SecurityConfig {
                 ).permitAll()
                 // Allow public access to homepage
                 .requestMatchers(
-                    "/api/public/**"
+                    "/api/public/**",
+                    "/api/seats/**"
                 ).permitAll()
                 // Customer only endpoints
                 .requestMatchers(
                     "/api/customer/**",
-                    "/api/booking/**",
-                    "/api/seats/**"
+                    "/api/booking/**"
                 ).hasRole("CUSTOMER")
                 // Staff only endpoints
                 .requestMatchers(
                     "/api/theatres/**",
                     "/api/screens/**",
-                    "/api/seats/**",
                     "/api/movie/**",
                     "/api/showtimes/**"
                 ).hasRole("STAFF")  
